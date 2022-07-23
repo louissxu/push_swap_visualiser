@@ -2,6 +2,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 from subprocess import run, TimeoutExpired
+from json import dumps as json_dumps
 import sys
 
 host_name = "127.0.0.1"
@@ -20,19 +21,19 @@ class PushSwapServer(BaseHTTPRequestHandler):
       # TODO: Handle this and return some sensible error
       pass
     self.send_response(200)
+    # TODO: CORS may be too broad. Consider narrowing it down
+    self.send_header("Access-Control-Allow-Origin","*")
+    self.send_header("Access-Control-Allow-Methods","*")
+    self.send_header("Access-Control-Allow-Headers","*")
     self.send_header("Content-type", "text/plain")
     self.end_headers()
-    self.wfile.write(bytes("Running push swap\n\n", "utf-8"))
-    self.wfile.write(bytes("----start-of-output----\n", "utf-8"))
-    self.wfile.write(bytes("stdout:\n", "utf-8"))
-    self.wfile.write(bytes(f"{stdout}", "utf-8"))
+    data = json_dumps({
+        "stdout": stdout,
+        "stderr": stderr,
+    })
+    self.wfile.write(bytes(data, "utf-8"))
     print(ps_args)
-    print(stdout)
-    print(stderr)
-    self.wfile.write(bytes("-----------------------\n", "utf-8"))
-    self.wfile.write(bytes("stderr:\n", "utf-8"))
-    self.wfile.write(bytes(f"{stderr}", "utf-8"))
-    self.wfile.write(bytes("-----end-of-output-----\n", "utf-8"))
+    print(data)
 
 def start_webserver():
   web_server = HTTPServer((host_name, server_port), PushSwapServer)
