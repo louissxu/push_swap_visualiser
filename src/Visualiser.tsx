@@ -11,7 +11,7 @@ interface IBarState {
 
 }
 
-class Bar extends React.Component<IBarProps, IBarState> {
+class Bar extends React.PureComponent<IBarProps, IBarState> {
   constructor(props: IBarProps) {
     super(props)
     this.state = {
@@ -101,7 +101,7 @@ interface IMovesState {
 
 }
 
-class Moves extends React.Component<IMovesProps, IMovesState> {
+class Moves extends React.PureComponent<IMovesProps, IMovesState> {
   constructor(props: IMovesProps) {
     super(props)
     this.state = {
