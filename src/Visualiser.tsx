@@ -124,6 +124,123 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       next_move_num: 0,
     }
   }
+  
+  psPrimitiveSa () {
+    if (this.state.stack_a.length <= 1) {
+      return;
+    }
+    const new_stack_a: Array<number>= this.state.stack_a.slice(1, 2).concat(
+      this.state.stack_a.slice(0, 1),
+      this.state.stack_a.slice(2),
+    );
+    this.setState({
+      stack_a: new_stack_a,
+    })
+  }
+
+  psPrimitiveSb () {
+    if (this.state.stack_b.length <= 1) {
+      return;
+    }
+    const new_stack_b: Array<number> = this.state.stack_b.slice(1, 2).concat(
+      this.state.stack_b.slice(0, 1),
+      this.state.stack_b.slice(2),
+    );
+    this.setState({
+      stack_b: new_stack_b,
+    })
+  }
+
+  psPrimitiveSs () {
+    this.psPrimitiveSa();
+    this.psPrimitiveSb();
+  }
+
+  psPrimitivePa () {
+    if (this.state.stack_b.length <= 0) {
+      return;
+    }
+    const new_stack_a: Array<number> = this.state.stack_b.slice(0, 1).concat(
+      this.state.stack_a.slice(),
+    )
+    const new_stack_b: Array<number> = this.state.stack_b.slice(1);
+    this.setState({
+      stack_a: new_stack_a,
+      stack_b: new_stack_b,
+    })
+  }
+
+  psPrimitivePb () {
+    if (this.state.stack_a.length <= 0) {
+      return;
+    }
+    const new_stack_a: Array<number> = this.state.stack_a.slice(1);
+    const new_stack_b: Array<number> = this.state.stack_a.slice(0, 1).concat(
+      this.state.stack_b.slice(),
+    );
+    this.setState({
+      stack_a: new_stack_a,
+      stack_b: new_stack_b,
+    })
+  }
+
+  psPrimitiveRa () {
+    if (this.state.stack_a.length <= 0) {
+      return;
+    }
+    const new_stack_a: Array<number> = this.state.stack_a.slice(1).concat(
+      this.state.stack_a.slice(0, 1),
+    );
+    this.setState({
+      stack_a: new_stack_a,
+    })
+  }
+
+  psPrimitiveRb () {
+    if (this.state.stack_a.length <= 0) {
+      return;
+    }
+    const new_stack_b: Array<number> = this.state.stack_b.slice(1).concat(
+      this.state.stack_b.slice(0, 1),
+    );
+    this.setState({
+      stack_b: new_stack_b,
+    })
+  }  
+
+  psPrimitiveRr () {
+    this.psPrimitiveRa();
+    this.psPrimitiveRb();
+  }
+
+  psPrimitiveRra () {
+    if (this.state.stack_a.length <= 0) {
+      return;
+    }
+    const new_stack_a: Array<number> = this.state.stack_a.slice(-1).concat(
+      this.state.stack_a.slice(0, -1),
+    );
+    this.setState({
+      stack_a: new_stack_a,
+    })
+  }
+
+  psPrimitiveRrb () {
+    if (this.state.stack_b.length <= 0) {
+      return;
+    }
+    const new_stack_b: Array<number> = this.state.stack_b.slice(-1).concat(
+      this.state.stack_b.slice(0, -1),
+    );
+    this.setState({
+      stack_b: new_stack_b,
+    })
+  }
+
+  psPrimitiveRrr () {
+    this.psPrimitiveRra();
+    this.psPrimitiveRrb();
+  }
 
   render() {
     return (
