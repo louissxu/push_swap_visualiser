@@ -1,8 +1,10 @@
 import React from 'react';
+import "./Visualiser.css";
 
 interface IBarProps {
   value: number,
   key: number,
+  max_value: number,
 }
 
 interface IBarState {
@@ -16,14 +18,32 @@ class Bar extends React.Component<IBarProps, IBarState> {
     }
   }
   render() {
+    const width: number = (this.props.value + 1) * 500 / this.props.max_value;
+    const height: number = Math.min(Math.max(1000 / this.props.max_value, 1), 50);
+    const hue: number = 240 - (240 / this.props.max_value * this.props.value);
+    let text: string | null = this.props.value.toString();
+    if (height < 10) {
+      text = null;
+    }
+    console.log(hue);
     return (
-      <li>{this.props.value}</li>
+      <li 
+        className="bar"
+        style={{
+          "width": width,
+          "height": height,
+          "backgroundColor": "hsl("+ hue.toString() +", 50%, 50%)",
+        }}
+      >
+        {text == null ? "" : text}
+      </li>
     )
   }
 }
 
 interface IStackProps {
   values: Array<number>,
+  max_value: number,
 }
 
 interface IStackState {
@@ -38,20 +58,22 @@ class Stack extends React.Component<IStackProps, IStackState> {
     }
   }
 
-  renderBar(val: number, key: number) {
+  renderBar(val: number, key: number, max_value: number) {
     return (
       <Bar
         value={val}
         key={key}
+        max_value={max_value}
       />
     );
   }
 
   render() {
     const values: Array<number> = this.props.values;
+    const max_value: number = this.props.max_value;
     return (
-      <ul>
-        {values.map((elem) => this.renderBar(elem, elem))}
+      <ul className="stack">
+        {values.map((elem) => this.renderBar(elem, elem, max_value))}
       </ul>
     );
   }
@@ -146,8 +168,10 @@ class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
       <form onSubmit={this.handleSubmit}>
         <label>
           Number of elements:
+          <br/>
           <input type="text" value={this.state.value} onChange={this.handleChange}/>
         </label>
+        <br/>
         <input type="submit" value="Generate stack to be sorted"/>
       </form>
 
@@ -160,6 +184,7 @@ interface IMenuProps {
   stepBackward: () => void,
   generateStartingState: (n: number) => void,
   getMoves: () => void,
+  playForward: () => void,
 }
 
 interface IMenuState {
@@ -186,6 +211,10 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
     this.props.getMoves();
   }
 
+  handlePlayForward() {
+    this.props.playForward();
+  }
+
   render() {
     return (
       <div>
@@ -194,11 +223,13 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         >
           Step Forward
         </button>
+        <br/>
         <button
           onClick={this.handleStepBackward.bind(this)}
         >
           Step Backward
         </button>
+        <br/>
         <NumberForm
           generateStartingState={this.props.generateStartingState}
         />
@@ -206,6 +237,11 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           onClick={this.handleGetMoves.bind(this)}
         >
           Get Moves
+        </button>
+        <button
+          onClick={this.handlePlayForward.bind(this)}
+        >
+          Play
         </button>
       </div>
     )
@@ -226,6 +262,7 @@ interface IVisualiserState {
   error_parsing_moves: Boolean,
   stdout: string,
   stderr: string,
+  max_value: number,
 }
 
 class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
@@ -264,6 +301,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       error_parsing_moves: false,
       stdout: "",
       stderr: "",
+      max_value: this.props.values.length,
     }
   }
   
@@ -484,6 +522,19 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     }
   }
 
+  timeout(delay: number) {
+    return new Promise((res) => setTimeout(res, delay));
+  }
+
+  playForward() {
+    if (this.state.next_move_num < this.state.moves.length) {
+      setTimeout(() => {
+        this.stepForward();
+        this.playForward();
+      }, 1);
+    }
+  }
+
   // Fisher-yates shuffle
   // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
   shuffle<Type>(arr: Array<Type>) {
@@ -506,7 +557,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       stack_b: new_stack_b,
       moves: new_moves,
       skipped_moves: [],
-      next_move_num: 0
+      next_move_num: 0,
+      max_value: new_stack_a.length,
     })
   }
 
@@ -581,13 +633,14 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
             stepBackward={this.stepBackward.bind(this)}
             generateStartingState={this.generateStartingState.bind(this)}
             getMoves={this.getMoves.bind(this)}
+            playForward={this.playForward.bind(this)}
           />
         </div>
         <div className="stack_a">
-          <Stack values={this.state.stack_a}/>
+          <Stack values={this.state.stack_a} max_value={this.state.max_value}/>
         </div>
         <div className="stack_b">
-          <Stack values={this.state.stack_b}/>
+          <Stack values={this.state.stack_b} max_value={this.state.max_value}/>
         </div>
         <div className="moves">
           <Moves moves={this.state.moves}/>

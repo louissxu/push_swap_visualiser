@@ -1,0 +1,15 @@
+.visualiser {
+  display: flex;
+}
+
+.stack {
+  width: 500px;
+  border: red solid 1px;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bar {
+
+}
