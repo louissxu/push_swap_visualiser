@@ -377,7 +377,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   psPrimitiveRb() {
-    if (this.state.stack_a.length <= 0) {
+    if (this.state.stack_b.length <= 0) {
       return;
     }
     const new_stack_b: Array<number> = this.state.stack_b.slice(1).concat(
