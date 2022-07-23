@@ -104,9 +104,61 @@ class Moves extends React.Component<IMovesProps, IMovesState> {
   }
 }
 
+interface INumberFormProps {
+  generateStartingState: (n: number) => void,
+}
+
+interface INumberFormState {
+  value: string,
+}
+
+class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
+  constructor(props: INumberFormProps) {
+    super(props);
+    this.state = {
+      value: "10",
+    }
+    this.handleChange = this.handleChange.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  handleChange(event: React.FormEvent<HTMLInputElement>) {
+    this.setState({
+      value: event.currentTarget.value,
+    })
+  }
+
+  handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    let parsed_value = parseInt(this.state.value);
+    if (isNaN(parsed_value)) {
+      this.props.generateStartingState(10);
+      this.setState({
+        value: "10",
+      })
+    } else {
+      this.props.generateStartingState(parsed_value);
+    }
+  }
+  
+  render () {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Number of elements:
+          <input type="text" value={this.state.value} onChange={this.handleChange}/>
+        </label>
+        <input type="submit" value="Generate stack to be sorted"/>
+      </form>
+
+    )
+  }
+}
+
 interface IMenuProps {
-  stepForward: React.MouseEventHandler<HTMLButtonElement>
-  stepBackward: React.MouseEventHandler<HTMLButtonElement>
+  stepForward: () => void,
+  stepBackward: () => void,
+  generateStartingState: (n: number) => void,
 }
 
 interface IMenuState {
@@ -121,19 +173,30 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
     }
   }
 
+  handleStepForward() {
+    this.props.stepForward();
+  }
+
+  handleStepBackward() {
+    this.props.stepBackward();
+  }
+
   render() {
     return (
       <div>
         <button
-          onClick={this.props.stepForward}
+          onClick={this.handleStepForward.bind(this)}
         >
           Step Forward
         </button>
         <button
-          onClick={this.props.stepBackward}
+          onClick={this.handleStepBackward.bind(this)}
         >
-          StepBackward
+          Step Backward
         </button>
+        <NumberForm
+          generateStartingState={this.props.generateStartingState}
+        />
       </div>
     )
   }
@@ -405,13 +468,40 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     }
   }
 
+  // Fisher-yates shuffle
+  // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+  shuffle<Type>(arr: Array<Type>) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  // Generating range array
+  // https://stackoverflow.com/a/29559488/9160572
+  generateStartingState(n: number) {
+    console.log(n);
+    const new_stack_a = Array.from(Array(n).keys());
+    this.shuffle(new_stack_a);
+    const new_stack_b: Array<number> = [];
+    const new_moves: Array<Move> = [];
+    this.setState({
+      stack_a: new_stack_a,
+      stack_b: new_stack_b,
+      moves: new_moves,
+      skipped_moves: [],
+      next_move_num: 0
+    })
+  }
+
   render() {
     return (
       <div className="visualiser">
         <div className="menu">
           <Menu
-            stepForward={() => this.stepForward()}
-            stepBackward={() => this.stepBackward()}
+            stepForward={this.stepForward.bind(this)}
+            stepBackward={this.stepBackward.bind(this)}
+            generateStartingState={this.generateStartingState.bind(this)}
           />
         </div>
         <div className="stack_a">
