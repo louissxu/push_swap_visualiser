@@ -159,6 +159,7 @@ interface IMenuProps {
   stepForward: () => void,
   stepBackward: () => void,
   generateStartingState: (n: number) => void,
+  getMoves: () => void,
 }
 
 interface IMenuState {
@@ -181,6 +182,10 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
     this.props.stepBackward();
   }
 
+  handleGetMoves() {
+    this.props.getMoves();
+  }
+
   render() {
     return (
       <div>
@@ -197,6 +202,11 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         <NumberForm
           generateStartingState={this.props.generateStartingState}
         />
+        <button
+          onClick={this.handleGetMoves.bind(this)}
+        >
+          Get Moves
+        </button>
       </div>
     )
   }
@@ -213,6 +223,9 @@ interface IVisualiserState {
   moves: Array<Move>,
   skipped_moves: Array<Boolean>,
   next_move_num: number,
+  error_parsing_moves: Boolean,
+  stdout: string,
+  stderr: string,
 }
 
 class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
@@ -248,6 +261,9 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       moves: this.props.moves,
       skipped_moves: skipped_moves,
       next_move_num: 0,
+      error_parsing_moves: false,
+      stdout: "",
+      stderr: "",
     }
   }
   
@@ -494,6 +510,68 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     })
   }
 
+  generateQueryUrl(nums: Array<number>) {
+    const url = "http://127.0.0.1:8080?" + nums.join(",");
+    return url;
+  }
+
+  stringToMove(str: string): Move | null {
+    switch(str){
+      case "sa":
+        return Move.Sa;
+      case "sb":
+        return Move.Sb;
+      case "ss":
+        return Move.Ss;
+      case "pa":
+        return Move.Pa;
+      case "pb":
+        return Move.Pb;
+      case "ra":
+        return Move.Ra;
+      case "rb":
+        return Move.Rb;
+      case "rr":
+        return Move.Rr;
+      case "rra":
+        return Move.Rra;
+      case "rrb":
+        return Move.Rrb;
+      case "rrr":
+        return Move.Rrr;
+    }
+    return null;
+  }
+
+  getMoves() {
+    const url = this.generateQueryUrl(this.state.stack_a);
+    fetch(url).then((response) => {
+      return response.text();
+    }).then((text) => {
+      const data = JSON.parse(text);
+      const stdout = data.stdout
+      const stderr = data.stderr;
+      const moves = stdout.trim().split("\n").map((elem: string) => this.stringToMove(elem));
+      if (moves.includes(null)) {
+        this.setState({
+          moves: [],
+          error_parsing_moves: true,
+          stdout: stdout,
+          stderr: stderr,
+        })
+      } else {
+        this.setState({
+          moves: moves,
+          error_parsing_moves: false,
+          stdout: stdout,
+          stderr: stderr,
+        })
+      }
+    }).catch(() => {
+      console.log("boo");
+    });
+  }
+
   render() {
     return (
       <div className="visualiser">
@@ -502,6 +580,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
             stepForward={this.stepForward.bind(this)}
             stepBackward={this.stepBackward.bind(this)}
             generateStartingState={this.generateStartingState.bind(this)}
+            getMoves={this.getMoves.bind(this)}
           />
         </div>
         <div className="stack_a">
