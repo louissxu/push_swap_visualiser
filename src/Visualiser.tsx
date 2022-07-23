@@ -2,6 +2,7 @@ import React from 'react';
 
 interface IBarProps {
   value: number,
+  key: number,
 }
 
 interface IBarState {
@@ -16,7 +17,7 @@ class Bar extends React.Component<IBarProps, IBarState> {
   }
   render() {
     return (
-      <li key={this.props.value}>{this.props.value}</li>
+      <li>{this.props.value}</li>
     )
   }
 }
@@ -37,10 +38,11 @@ class Stack extends React.Component<IStackProps, IStackState> {
     }
   }
 
-  renderBar(val: number) {
+  renderBar(val: number, key: number) {
     return (
       <Bar
         value={val}
+        key={key}
       />
     );
   }
@@ -49,7 +51,7 @@ class Stack extends React.Component<IStackProps, IStackState> {
     const values: Array<number> = this.props.values;
     return (
       <ul>
-        {values.map((elem) => this.renderBar(elem))}
+        {values.map((elem) => this.renderBar(elem, elem))}
       </ul>
     );
   }
@@ -90,9 +92,9 @@ class Moves extends React.Component<IMovesProps, IMovesState> {
 
     return (
       <ul>
-        {moves.map((move) => {
+        {moves.map((move, index) => {
           return (
-            <li>
+            <li key={index}>
               {move}
             </li>
           )
