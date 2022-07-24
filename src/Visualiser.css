@@ -2,14 +2,42 @@
   display: flex;
 }
 
-.stack {
-  width: 500px;
-  border: red solid 1px;
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
 .bar {
 
+}
+
+.menu-container {
+  background-color: #d1d5da;
+  padding: 20px;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.moves-container {
+  background-color: #b6bdc5;
+  width: 100px;
+  padding: 20px;
+  display: flex;
+  flex-flow: column;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.moves-data {
+  flex: 1 1 auto;
+  list-style-type: none;
+  overflow: scroll;
+  padding-left: 5px;
+  /* height: */
+}
+
+
+.stack {
+  width: 500px;
+  background-color: #717e8e;
+  list-style-type: none;
+  padding: 20px;
+  margin: 0;
+  height: 100vh;
+  box-sizing: border-box;
 }

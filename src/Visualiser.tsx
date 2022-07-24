@@ -113,15 +113,18 @@ class Moves extends React.PureComponent<IMovesProps, IMovesState> {
     const moves: Array<Move> = this.props.moves;
 
     return (
-      <ul>
-        {moves.map((move, index) => {
-          return (
-            <li key={index}>
-              {move}
-            </li>
-          )
-        })}
-      </ul>
+      <div className="moves-container">
+        <h3>Moves</h3>
+        <ul className="moves-data">
+          {moves.map((move, index) => {
+            return (
+              <li key={index}>
+                {move}
+              </li>
+            )
+          })}
+        </ul>
+      </div>
     )
   }
 }
@@ -218,6 +221,20 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
   render() {
     return (
       <div>
+        <h1>Push Swap<br/>Visualiser</h1>
+        <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
+        <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
+        <h3>Menu</h3>
+        <h4>Data Controls</h4>
+        <NumberForm
+          generateStartingState={this.props.generateStartingState}
+        />
+        <button
+          onClick={this.handleGetMoves.bind(this)}
+        >
+          Get Moves
+        </button>
+        <h4>Playback Controls</h4>
         <button
           onClick={this.handleStepForward.bind(this)}
         >
@@ -230,14 +247,6 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           Step Backward
         </button>
         <br/>
-        <NumberForm
-          generateStartingState={this.props.generateStartingState}
-        />
-        <button
-          onClick={this.handleGetMoves.bind(this)}
-        >
-          Get Moves
-        </button>
         <button
           onClick={this.handlePlayForward.bind(this)}
         >
@@ -627,7 +636,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   render() {
     return (
       <div className="visualiser">
-        <div className="menu">
+        <div className="menu-container">
           <Menu
             stepForward={this.stepForward.bind(this)}
             stepBackward={this.stepBackward.bind(this)}
@@ -636,14 +645,12 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
             playForward={this.playForward.bind(this)}
           />
         </div>
+        <Moves moves={this.state.moves}/>
         <div className="stack_a">
           <Stack values={this.state.stack_a} max_value={this.state.max_value}/>
         </div>
         <div className="stack_b">
           <Stack values={this.state.stack_b} max_value={this.state.max_value}/>
-        </div>
-        <div className="moves">
-          <Moves moves={this.state.moves}/>
         </div>
       </div>
     )
