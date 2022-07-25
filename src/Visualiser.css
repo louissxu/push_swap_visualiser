@@ -1,5 +1,6 @@
 .visualiser {
   display: flex;
+  justify-content: center;
 }
 
 .bar {
@@ -8,15 +9,17 @@
 
 .menu-container {
   background-color: #d1d5da;
-  padding: 20px;
+  padding: 0px 20px 0px 20px;
   height: 100vh;
   box-sizing: border-box;
+  flex: 0 0 300px;
 }
 
 .moves-container {
   background-color: #b6bdc5;
-  width: 100px;
-  padding: 20px;
+  padding: 0px 20px 0px 20px;
+  flex: 0 0 100px;
+
   display: flex;
   flex-flow: column;
   height: 100vh;
@@ -31,13 +34,22 @@
   /* height: */
 }
 
+.stack-container {
+  background-color: #717e8e;
+  padding: 0px 20px 0px 20px;
+  height: 100vh;
+  box-sizing: border-box;
+  flex: 0 1 510px;
+
+  display: flex;
+  flex-flow: column;
+}
 
 .stack {
-  width: 500px;
-  background-color: #717e8e;
+  background-color: #2e343a;
   list-style-type: none;
-  padding: 20px;
+  padding: 5px;
   margin: 0;
-  height: 100vh;
+  flex: 1 1 100px;
   box-sizing: border-box;
 }

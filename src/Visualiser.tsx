@@ -44,6 +44,7 @@ class Bar extends React.PureComponent<IBarProps, IBarState> {
 interface IStackProps {
   values: Array<number>,
   max_value: number,
+  title: string,
 }
 
 interface IStackState {
@@ -72,9 +73,12 @@ class Stack extends React.Component<IStackProps, IStackState> {
     const values: Array<number> = this.props.values;
     const max_value: number = this.props.max_value;
     return (
-      <ul className="stack">
-        {values.map((elem) => this.renderBar(elem, elem, max_value))}
-      </ul>
+      <div className="stack-container">
+        <h3>{this.props.title}</h3>
+        <ul className="stack">
+          {values.map((elem) => this.renderBar(elem, elem, max_value))}
+        </ul>
+      </div>
     );
   }
 }
@@ -220,7 +224,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
 
   render() {
     return (
-      <div>
+      <div className="menu-container">
         <h1>Push Swap<br/>Visualiser</h1>
         <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
         <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
@@ -636,22 +640,16 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   render() {
     return (
       <div className="visualiser">
-        <div className="menu-container">
-          <Menu
-            stepForward={this.stepForward.bind(this)}
-            stepBackward={this.stepBackward.bind(this)}
-            generateStartingState={this.generateStartingState.bind(this)}
-            getMoves={this.getMoves.bind(this)}
-            playForward={this.playForward.bind(this)}
-          />
-        </div>
+        <Menu
+          stepForward={this.stepForward.bind(this)}
+          stepBackward={this.stepBackward.bind(this)}
+          generateStartingState={this.generateStartingState.bind(this)}
+          getMoves={this.getMoves.bind(this)}
+          playForward={this.playForward.bind(this)}
+        />
         <Moves moves={this.state.moves}/>
-        <div className="stack_a">
-          <Stack values={this.state.stack_a} max_value={this.state.max_value}/>
-        </div>
-        <div className="stack_b">
-          <Stack values={this.state.stack_b} max_value={this.state.max_value}/>
-        </div>
+        <Stack values={this.state.stack_a} max_value={this.state.max_value} title="Stack A"/>
+        <Stack values={this.state.stack_b} max_value={this.state.max_value} title="Stack B"/>
       </div>
     )
   }
