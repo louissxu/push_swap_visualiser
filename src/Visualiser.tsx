@@ -74,7 +74,7 @@ class Stack extends React.Component<IStackProps, IStackState> {
     const max_value: number = this.props.max_value;
     return (
       <div className="stack-container">
-        <h3>{this.props.title}</h3>
+        <h3 className="stack-title">{this.props.title}</h3>
         <ul className="stack">
           {values.map((elem) => this.renderBar(elem, elem, max_value))}
         </ul>
@@ -251,6 +251,9 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           Step Backward
         </button>
         <br/>
+        <label htmlFor="playback-speed">Playback Speed (ms per move):</label>
+        <input type="range" id="playback-speed" name="playback-speed" min="1" max="1000"></input>
+        <br></br>
         <button
           onClick={this.handlePlayForward.bind(this)}
         >
