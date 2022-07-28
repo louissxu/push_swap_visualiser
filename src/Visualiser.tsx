@@ -48,14 +48,37 @@ interface IStackProps {
 }
 
 interface IStackState {
+  width: number;
+  height: number;
   
 }
 
 class Stack extends React.Component<IStackProps, IStackState> {
+  ref: React.RefObject<HTMLInputElement>;
+
   constructor(props: IStackProps) {
     super(props)
+    this.ref = React.createRef();
     this.state = {
-
+      width: 0,
+      height: 0,
+    }
+  }
+  
+  componentDidMount() {
+    const new_width = this.ref.current?.width;
+    const new_height = this.ref.current?.height;
+    
+    console.log(this.ref.current);
+    if (new_width && new_width !== this.state.width) {
+      this.setState({
+        width: new_width,
+      })
+    }
+    if (new_height && new_height !== this.state.height) {
+      this.setState({
+        height: new_height,
+      })
     }
   }
 
@@ -72,12 +95,16 @@ class Stack extends React.Component<IStackProps, IStackState> {
   render() {
     const values: Array<number> = this.props.values;
     const max_value: number = this.props.max_value;
+
+    console.log({height: this.state.height, width: this.state.width})
     return (
       <div className="stack-container">
         <h3 className="stack-title">{this.props.title}</h3>
-        <ul className="stack">
-          {values.map((elem) => this.renderBar(elem, elem, max_value))}
-        </ul>
+        <div className="stack-subcontainer">
+          <ul className="stack-content">
+            {values.map((elem) => this.renderBar(elem, elem, max_value))}
+          </ul>
+        </div>
       </div>
     );
   }

@@ -12,16 +12,16 @@
   padding: 0px 20px 0px 20px;
   height: 100vh;
   box-sizing: border-box;
-  /* flex: 0 0 300px; */
-  width: 300px;
+  flex: 0 1 300px;
+  /* width: 300px; */
 }
 
 .moves-container {
   background-color: #b6bdc5;
   padding: 0px 20px 0px 20px;
-  /* flex: 0 0 100px; */
+  flex: 0 1 100px;
+  /* width: 100px; */
 
-  width: 100px;
   display: flex;
   flex-flow: column;
   height: 100vh;
@@ -41,11 +41,28 @@
   padding: 0px 20px 0px 20px;
   height: 100vh;
   box-sizing: border-box;
-  /* flex: 0 0 500px; */
+  flex: 0 1 500px;
 
   display: flex;
   flex-flow: column;
 
+}
+
+.stack-subcontainer {
+  background-color: #2e343a;
+  height: 100%;
+  margin-bottom: 20px;
+  /* width: 100%; */
+}
+
+.stack-content {
+  width: 0px;
+  list-style-type: none;
+  padding: 5px;
+  margin: 0px;
+  margin-bottom: 15px;
+  overflow: visible;
+  box-sizing: border-box;
 }
 
 .stack {
@@ -54,8 +71,8 @@
   padding: 5px;
   margin: 0;
   margin-bottom: 15px;
-  width: 510px;
-  height: 1010px;
+  /* width: 510px; */
+  /* height: 1010px; */
   box-sizing: border-box;
   /* width: 100%; */
   overflow: visible;
