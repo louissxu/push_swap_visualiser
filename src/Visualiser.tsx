@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import "./Visualiser.css";
 
 interface IBarProps {
@@ -25,7 +25,7 @@ class Bar extends React.PureComponent<IBarProps, IBarState> {
     if (height < 10) {
       text = null;
     }
-    console.log(hue);
+    // console.log(hue);
     return (
       <li 
         className="bar"
@@ -53,6 +53,51 @@ interface IStackState {
   
 }
 
+const StackNew = (props: IStackProps) => {
+  const [width, setWidth] = React.useState(0);
+  const [height, setHeight]= React.useState(0);
+  const targetRef = React.useRef();
+
+
+  React.useEffect(() => {
+    console.log("use effect running");
+    console.log(targetRef);
+    console.log(targetRef.current);
+    if (targetRef.current) {
+      console.log("the target is");
+      console.log(targetRef.current);
+      // setWidth(targetRef.current.offsetWidth);
+      // setHeight(targetRef.current.offsetHeight);
+    }
+  })
+
+  const renderBar = (val: number, key: number, max_value: number) => {
+    return (
+      <Bar
+        value={val}
+        key={key}
+        max_value={max_value}
+      />
+    );
+  }
+
+  const values: Array<number> = props.values;
+  const max_value: number = props.max_value;
+
+  // console.log({height: height, width: width})
+
+  return (
+    <div className="stack-container">
+      <h3 className="stack-title">{props.title}</h3>
+      <div className="stack-subcontainer">
+        <ul className="stack-content">
+          {values.map((elem) => renderBar(elem, elem, max_value))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 class Stack extends React.Component<IStackProps, IStackState> {
   ref: React.RefObject<HTMLInputElement>;
 
@@ -69,7 +114,7 @@ class Stack extends React.Component<IStackProps, IStackState> {
     const new_width = this.ref.current?.width;
     const new_height = this.ref.current?.height;
     
-    console.log(this.ref.current);
+    // console.log(this.ref.current);
     if (new_width && new_width !== this.state.width) {
       this.setState({
         width: new_width,
@@ -96,7 +141,7 @@ class Stack extends React.Component<IStackProps, IStackState> {
     const values: Array<number> = this.props.values;
     const max_value: number = this.props.max_value;
 
-    console.log({height: this.state.height, width: this.state.width})
+    // console.log({height: this.state.height, width: this.state.width})
     return (
       <div className="stack-container">
         <h3 className="stack-title">{this.props.title}</h3>
@@ -590,7 +635,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   // Generating range array
   // https://stackoverflow.com/a/29559488/9160572
   generateStartingState(n: number) {
-    console.log(n);
+    // console.log(n);
     const new_stack_a = Array.from(Array(n).keys());
     this.shuffle(new_stack_a);
     const new_stack_b: Array<number> = [];
@@ -679,6 +724,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         />
         <Moves moves={this.state.moves}/>
         <Stack values={this.state.stack_a} max_value={this.state.max_value} title="Stack A"/>
+        <StackNew values={this.state.stack_a} max_value={this.state.max_value} title="Stack A New"/>
         <Stack values={this.state.stack_b} max_value={this.state.max_value} title="Stack B"/>
       </div>
     )
