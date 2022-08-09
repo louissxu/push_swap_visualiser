@@ -1,10 +1,12 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import "./Visualiser.css";
 
 interface IBarProps {
   value: number,
   key: number,
   max_value: number,
+  available_width: number,
+  available_height: number,
 }
 
 interface IBarState {
@@ -18,14 +20,13 @@ class Bar extends React.PureComponent<IBarProps, IBarState> {
     }
   }
   render() {
-    const width: number = (this.props.value + 1) * 500 / this.props.max_value;
-    const height: number = Math.min(Math.max(1000 / this.props.max_value, 1), 50);
+    const width: number = (this.props.value + 1) * this.props.available_width / this.props.max_value;
+    const height: number = Math.max(0, Math.min(50, this.props.available_height / this.props.max_value));
     const hue: number = 240 - (240 / this.props.max_value * this.props.value);
     let text: string | null = this.props.value.toString();
     if (height < 10) {
       text = null;
     }
-    // console.log(hue);
     return (
       <li 
         className="bar"
@@ -47,112 +48,53 @@ interface IStackProps {
   title: string,
 }
 
-interface IStackState {
-  width: number;
-  height: number;
+const Stack = (props: IStackProps) => {
+  const [stackSize, setStackSize] = useState({width: 0, height: 0});
+  const targetRef = useRef<HTMLDivElement>(null);
   
-}
-
-const StackNew = (props: IStackProps) => {
-  const [width, setWidth] = React.useState(0);
-  const [height, setHeight]= React.useState(0);
-  const targetRef = React.useRef();
-
-
-  React.useEffect(() => {
-    console.log("use effect running");
-    console.log(targetRef);
-    console.log(targetRef.current);
+  const handleResize = () => {
     if (targetRef.current) {
-      console.log("the target is");
-      console.log(targetRef.current);
-      // setWidth(targetRef.current.offsetWidth);
-      // setHeight(targetRef.current.offsetHeight);
+      setStackSize({width: targetRef.current.clientWidth, height: targetRef.current.clientHeight});
     }
-  })
+  }
+  
+    useEffect(() => {
+      if (targetRef.current) {
+        setStackSize({width: targetRef.current.clientWidth, height: targetRef.current.clientHeight});
+      }
+    }, []);
 
-  const renderBar = (val: number, key: number, max_value: number) => {
+    useEffect (() => {
+      window.addEventListener("resize", handleResize);
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      }
+    })
+    
+  const renderBar = (val: number, key: number, max_value: number, stack_width: number, stack_height: number) => {
     return (
       <Bar
         value={val}
         key={key}
         max_value={max_value}
+        available_width={stack_width - 10}
+        available_height={stack_height - 10}
       />
     );
   }
 
   const values: Array<number> = props.values;
-  const max_value: number = props.max_value;
-
-  // console.log({height: height, width: width})
 
   return (
     <div className="stack-container">
       <h3 className="stack-title">{props.title}</h3>
-      <div className="stack-subcontainer">
+      <div className="stack-subcontainer" ref={targetRef}>
         <ul className="stack-content">
-          {values.map((elem) => renderBar(elem, elem, max_value))}
+          {values.map((elem) => renderBar(elem, elem, props.max_value, stackSize.width, stackSize.height))}
         </ul>
       </div>
     </div>
   );
-}
-
-class Stack extends React.Component<IStackProps, IStackState> {
-  ref: React.RefObject<HTMLInputElement>;
-
-  constructor(props: IStackProps) {
-    super(props)
-    this.ref = React.createRef();
-    this.state = {
-      width: 0,
-      height: 0,
-    }
-  }
-  
-  componentDidMount() {
-    const new_width = this.ref.current?.width;
-    const new_height = this.ref.current?.height;
-    
-    // console.log(this.ref.current);
-    if (new_width && new_width !== this.state.width) {
-      this.setState({
-        width: new_width,
-      })
-    }
-    if (new_height && new_height !== this.state.height) {
-      this.setState({
-        height: new_height,
-      })
-    }
-  }
-
-  renderBar(val: number, key: number, max_value: number) {
-    return (
-      <Bar
-        value={val}
-        key={key}
-        max_value={max_value}
-      />
-    );
-  }
-
-  render() {
-    const values: Array<number> = this.props.values;
-    const max_value: number = this.props.max_value;
-
-    // console.log({height: this.state.height, width: this.state.width})
-    return (
-      <div className="stack-container">
-        <h3 className="stack-title">{this.props.title}</h3>
-        <div className="stack-subcontainer">
-          <ul className="stack-content">
-            {values.map((elem) => this.renderBar(elem, elem, max_value))}
-          </ul>
-        </div>
-      </div>
-    );
-  }
 }
 
 export enum Move {
@@ -724,7 +666,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         />
         <Moves moves={this.state.moves}/>
         <Stack values={this.state.stack_a} max_value={this.state.max_value} title="Stack A"/>
-        <StackNew values={this.state.stack_a} max_value={this.state.max_value} title="Stack A New"/>
         <Stack values={this.state.stack_b} max_value={this.state.max_value} title="Stack B"/>
       </div>
     )

@@ -48,10 +48,15 @@
 
 }
 
+.stack-title {
+  flex: 0 0 auto;
+}
+
 .stack-subcontainer {
   background-color: #2e343a;
-  height: 100%;
   margin-bottom: 20px;
+  flex: 0 1 100vh;
+  overflow: hidden;
   /* width: 100%; */
 }
 
