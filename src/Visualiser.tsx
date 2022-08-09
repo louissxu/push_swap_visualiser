@@ -206,6 +206,8 @@ interface IMenuProps {
   generateStartingState: (n: number) => void,
   getMoves: () => void,
   playForward: () => void,
+  updatePlaybackSpeed: (newValue: number) => void,
+  msBetweenMoves: number,
 }
 
 interface IMenuState {
@@ -234,6 +236,10 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
 
   handlePlayForward() {
     this.props.playForward();
+  }
+
+  handlePlaybackSpeedChange(event: React.FormEvent<HTMLInputElement>) {
+    this.props.updatePlaybackSpeed(parseInt(event.currentTarget.value));
   }
 
   render() {
@@ -266,7 +272,8 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         </button>
         <br/>
         <label htmlFor="playback-speed">Playback Speed (ms per move):</label>
-        <input type="range" id="playback-speed" name="playback-speed" min="1" max="1000"></input>
+        <input type="range" id="playback-speed" name="playback-speed" min="1" max="1000" onChange={this.handlePlaybackSpeedChange.bind(this)}></input>
+        <output>{this.props.msBetweenMoves}</output>
         <br></br>
         <button
           onClick={this.handlePlayForward.bind(this)}
@@ -293,6 +300,7 @@ interface IVisualiserState {
   stdout: string,
   stderr: string,
   max_value: number,
+  ms_between_moves: number,
 }
 
 class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
@@ -332,6 +340,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       stdout: "",
       stderr: "",
       max_value: this.props.values.length,
+      ms_between_moves: 1,
     }
   }
   
@@ -561,7 +570,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       setTimeout(() => {
         this.stepForward();
         this.playForward();
-      }, 1);
+      }, this.state.ms_between_moves);
     }
   }
 
@@ -654,6 +663,12 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     });
   }
 
+  updatePlaybackSpeed(newValue: number) {
+    this.setState({
+      ms_between_moves: newValue,
+    })
+  }
+
   render() {
     return (
       <div className="visualiser">
@@ -663,10 +678,15 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           generateStartingState={this.generateStartingState.bind(this)}
           getMoves={this.getMoves.bind(this)}
           playForward={this.playForward.bind(this)}
+          updatePlaybackSpeed={this.updatePlaybackSpeed.bind(this)}
+          msBetweenMoves={this.state.ms_between_moves}
         />
         <Moves moves={this.state.moves}/>
+        <div className="stack-spacer"></div>
         <Stack values={this.state.stack_a} max_value={this.state.max_value} title="Stack A"/>
+        <div className="stack-spacer"></div>
         <Stack values={this.state.stack_b} max_value={this.state.max_value} title="Stack B"/>
+        <div className="stack-spacer"></div>
       </div>
     )
   }
