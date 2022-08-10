@@ -36,6 +36,11 @@
   /* height: */
 }
 
+.moves-current-move {
+  border: solid green 1px;
+  background-color: lightgreen;
+}
+
 .stack-spacer {
   background-color: #717e8e;
   flex: 0 1 20px;

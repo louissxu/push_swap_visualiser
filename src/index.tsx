@@ -11,7 +11,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     {/* <App /> */}
-    <Visualiser values={[7, 0, 1, 2, 3]} moves={[Move.Pa, Move.Pb]}/>
+    <Visualiser values={[4, 0, 1, 2, 3]} moves={[Move.Start, Move.Pa, Move.Pb]}/>
   </React.StrictMode>
 );
 

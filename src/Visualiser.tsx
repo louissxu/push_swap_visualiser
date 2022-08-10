@@ -98,6 +98,7 @@ const Stack = (props: IStackProps) => {
 }
 
 export enum Move {
+  Start = "starting state",
   Sa = "sa",
   Sb = "sb",
   Ss = "ss",
@@ -113,6 +114,7 @@ export enum Move {
 
 interface IMovesProps {
   moves: Array<Move>
+  current_move_num: number
 }
 
 interface IMovesState {
@@ -133,7 +135,11 @@ class Moves extends React.PureComponent<IMovesProps, IMovesState> {
     return (
       <div className="moves-container">
         <h3>Moves</h3>
+        <h5>Current Move Number: {this.props.current_move_num}</h5>
         <ul className="moves-data">
+          <li key={-1} className="moves-current-move">
+            test
+          </li>
           {moves.map((move, index) => {
             return (
               <li key={index}>
@@ -295,7 +301,7 @@ interface IVisualiserState {
   stack_b: Array<number>,
   moves: Array<Move>,
   skipped_moves: Array<Boolean>,
-  next_move_num: number,
+  current_move_num: number,
   error_parsing_moves: Boolean,
   stdout: string,
   stderr: string,
@@ -305,12 +311,28 @@ interface IVisualiserState {
 
 class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   constructor(props: IVisualiserProps) {
-    super(props)
-    const skipped_moves: Array<boolean> = []
-    let left_length = this.props.values.length;
+    super(props);
+    const skipped_moves: Array<boolean> = this.calculateSkippedMoves(this.props.moves, this.props.values.length)
+    this.state = {
+      stack_a: this.props.values,
+      stack_b: [],
+      moves: this.props.moves,
+      skipped_moves: skipped_moves,
+      current_move_num: 0,
+      error_parsing_moves: false,
+      stdout: "",
+      stderr: "",
+      max_value: this.props.values.length,
+      playback_fps: 10,
+    }
+  }
+  
+  calculateSkippedMoves (moves: Array<Move>, number_of_values: number): Array<boolean> {
+    let left_length = number_of_values;
     let right_length = 0;
-    for (let i = 0; i < this.props.moves.length; i++) {
-      if (this.props.moves[i] === Move.Pa) {
+    const skipped_moves = []
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i] === Move.Pa) {
         if (right_length > 0) {
           right_length--;
           left_length++;
@@ -318,7 +340,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         } else {
           skipped_moves.push(true);
         }
-      } else if (this.props.moves[i] === Move.Pb) {
+      } else if (moves[i] === Move.Pb) {
         if (left_length > 0) {
           left_length--;
           right_length++;
@@ -330,18 +352,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         skipped_moves.push(false);
       }
     }
-    this.state = {
-      stack_a: this.props.values,
-      stack_b: [],
-      moves: this.props.moves,
-      skipped_moves: skipped_moves,
-      next_move_num: 0,
-      error_parsing_moves: false,
-      stdout: "",
-      stderr: "",
-      max_value: this.props.values.length,
-      playback_fps: 10,
-    }
+    return skipped_moves;
   }
   
   psPrimitiveSa() {
@@ -541,22 +552,22 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   stepForward() {
-    if (this.state.next_move_num < this.state.moves.length) {
-      this.executeMove(this.state.moves[this.state.next_move_num]);
+    if (this.state.current_move_num < this.state.moves.length - 1) {
+      this.executeMove(this.state.moves[this.state.current_move_num + 1]);
       this.setState({
-        next_move_num: this.state.next_move_num + 1,
+        current_move_num: this.state.current_move_num + 1,
       });
     }
   }
 
   stepBackward() {
-    if (this.state.next_move_num > 0) {
+    if (this.state.current_move_num > 0) {
       this.executeReverseMove(
-        this.state.moves[this.state.next_move_num - 1], 
-        this.state.skipped_moves[this.state.next_move_num - 1]
+        this.state.moves[this.state.current_move_num], 
+        this.state.skipped_moves[this.state.current_move_num]
       )
       this.setState({
-        next_move_num: this.state.next_move_num - 1,
+        current_move_num: this.state.current_move_num - 1,
       });
     }
   }
@@ -566,7 +577,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   playForward() {
-    if (this.state.next_move_num < this.state.moves.length) {
+    if (this.state.current_move_num < this.state.moves.length - 1) {
       setTimeout(() => {
         this.stepForward();
         this.playForward();
@@ -596,7 +607,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       stack_b: new_stack_b,
       moves: new_moves,
       skipped_moves: [],
-      next_move_num: 0,
+      current_move_num: 0,
       max_value: new_stack_a.length,
     })
   }
@@ -649,13 +660,16 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           error_parsing_moves: true,
           stdout: stdout,
           stderr: stderr,
+          skipped_moves: [],
         })
       } else {
+        const moves_with_start = [Move.Start, ...moves];
         this.setState({
-          moves: moves,
+          moves: moves_with_start,
           error_parsing_moves: false,
           stdout: stdout,
           stderr: stderr,
+          skipped_moves: this.calculateSkippedMoves(moves_with_start, this.state.stack_a.length)
         })
       }
     }).catch(() => {
@@ -681,7 +695,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           updatePlaybackSpeed={this.updatePlaybackSpeed.bind(this)}
           playbackFps={this.state.playback_fps}
         />
-        <Moves moves={this.state.moves}/>
+        <Moves moves={this.state.moves} current_move_num={this.state.current_move_num}/>
         <div className="stack-spacer"></div>
         <Stack values={this.state.stack_a} max_value={this.state.max_value} title="Stack A"/>
         <div className="stack-spacer"></div>
