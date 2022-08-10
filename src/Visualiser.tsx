@@ -297,6 +297,7 @@ interface IVisualiserProps {
 }
 
 interface IVisualiserState {
+  starting_stack_a: Array<number>,
   stack_a: Array<number>,
   stack_b: Array<number>,
   moves: Array<Move>,
@@ -314,6 +315,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     super(props);
     const skipped_moves: Array<boolean> = this.calculateSkippedMoves(this.props.moves, this.props.values.length)
     this.state = {
+      starting_stack_a: this.props.values,
       stack_a: this.props.values,
       stack_b: [],
       moves: this.props.moves,
@@ -603,6 +605,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     const new_stack_b: Array<number> = [];
     const new_moves: Array<Move> = [];
     this.setState({
+      starting_stack_a: new_stack_a,
       stack_a: new_stack_a,
       stack_b: new_stack_b,
       moves: new_moves,
@@ -646,7 +649,12 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   getMoves() {
-    const url = this.generateQueryUrl(this.state.stack_a);
+    const url = this.generateQueryUrl(this.state.starting_stack_a);
+    this.setState({
+      stack_a: this.state.starting_stack_a,
+      stack_b: [],
+      current_move_num: 0,
+    })
     fetch(url).then((response) => {
       return response.text();
     }).then((text) => {
