@@ -112,6 +112,33 @@ export enum Move {
   Rrr = "rrr",
 }
 
+interface IMovesRowProps {
+  move: Move
+  is_current: boolean
+  move_number: number
+}
+
+interface IMovesRowState {
+
+}
+
+class MovesRow extends React.PureComponent<IMovesRowProps, IMovesRowState> {
+  constructor(props: IMovesRowProps) {
+    super(props)
+    this.state = {
+
+    }
+  }
+  render() {
+    console.log("rendering move number: " + this.props.move_number);
+    return (
+      <li key={this.props.move_number}>
+        {this.props.move}
+      </li>
+    )
+  }
+}
+
 interface IMovesProps {
   moves: Array<Move>
   current_move_num: number
@@ -142,9 +169,11 @@ class Moves extends React.PureComponent<IMovesProps, IMovesState> {
           </li>
           {moves.map((move, index) => {
             return (
-              <li key={index}>
-                {move}
-              </li>
+              <MovesRow
+                move={move}
+                move_number={index}
+                is_current={false}
+              />
             )
           })}
         </ul>
