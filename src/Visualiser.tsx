@@ -130,14 +130,45 @@ class MovesRow extends React.PureComponent<IMovesRowProps, IMovesRowState> {
     }
   }
   render() {
-    console.log("rendering move number: " + this.props.move_number);
-    return (
-      <li key={this.props.move_number}>
-        {this.props.move}
-      </li>
-    )
+    // console.log("rendering move number: " + this.props.move_number + this.props.is_current);
+    if (this.props.is_current) {
+      return (
+        <li className="moves-current-move">
+          {this.props.move}
+        </li>
+      )
+    } else {
+      return (
+        <li>
+          {this.props.move}
+        </li>
+      )
+    }
   }
 }
+
+// interface IMovesCountProps {
+//   current_move_number: number
+// }
+
+// interface IMovesCountState {
+
+// }
+
+// class MovesCount extends React.PureComponent<IMovesCountProps, IMovesCountState> {
+//   constructor(props: IMovesCountProps) {
+//     super(props)
+//     this.state = {
+
+//     }
+//   }
+
+//   render() {
+//     return (
+//       <h5>Current Move Number: {this.props.current_move_number}</h5>
+//     )
+//   }
+// }
 
 interface IMovesProps {
   moves: Array<Move>
@@ -158,21 +189,23 @@ class Moves extends React.PureComponent<IMovesProps, IMovesState> {
 
   render() {
     const moves: Array<Move> = this.props.moves;
-
+    // console.log(this.props.current_move_num);
     return (
       <div className="moves-container">
         <h3>Moves</h3>
+        {/* <MovesCount
+          current_move_number={this.props.current_move_num}
+        /> */}
         <h5>Current Move Number: {this.props.current_move_num}</h5>
         <ul className="moves-data">
-          <li key={-1} className="moves-current-move">
-            test
-          </li>
           {moves.map((move, index) => {
             return (
               <MovesRow
+                // key={index.toString() + (index === this.props.current_move_num ? "t" : "f")}
+                key={index}
                 move={move}
                 move_number={index}
-                is_current={false}
+                is_current={index === this.props.current_move_num ? true : false}
               />
             )
           })}
