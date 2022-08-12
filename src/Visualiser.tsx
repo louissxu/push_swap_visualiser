@@ -58,18 +58,18 @@ const Stack = (props: IStackProps) => {
     }
   }
   
-    useEffect(() => {
-      if (targetRef.current) {
-        setStackSize({width: targetRef.current.clientWidth, height: targetRef.current.clientHeight});
-      }
-    }, []);
+  useEffect(() => {
+    if (targetRef.current) {
+      setStackSize({width: targetRef.current.clientWidth, height: targetRef.current.clientHeight});
+    }
+  }, []);
 
-    useEffect (() => {
-      window.addEventListener("resize", handleResize);
-      return () => {
-        window.removeEventListener("resize", handleResize);
-      }
-    })
+  useEffect (() => {
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    }
+  })
     
   const renderBar = (val: number, key: number, max_value: number, stack_width: number, stack_height: number) => {
     return (
@@ -176,44 +176,136 @@ interface IMovesProps {
 }
 
 interface IMovesState {
-
+  currentScrollRef: React.RefObject<HTMLDivElement>
+  nullScrollRef: React.RefObject<HTMLDivElement>
 }
 
-class Moves extends React.PureComponent<IMovesProps, IMovesState> {
-  constructor(props: IMovesProps) {
-    super(props)
-    this.state = {
+// class Moves extends React.Component<IMovesProps, IMovesState> {
+//   constructor(props: IMovesProps) {
+//     super(props)
+//     this.state = {
+//       currentScrollRef: React.createRef(),
+//       nullScrollRef: React.createRef()
+//     }
+//   }
+  
+//   executeScroll = () => {
+//     if (this.state.currentScrollRef.current) {
+//       this.state.currentScrollRef.current.scrollIntoView()
+//     }
+//   }
 
+//   // useEffect(() => {
+//   //   this.executeScroll();
+//   // }, []);
+
+//   render() {
+//     // const moves: Array<Move> = this.props.moves;
+//     // const offset = this.state.moves_display_offset;
+
+//     // const movesSubset = this.props.moves.slice(offset, offset + 100)
+//     // console.log(this.props.current_move_num);
+//     return (
+//       <div className="moves-container">
+//         <h3>Moves</h3>
+//         <h5>Number of Moves: {Math.max(0, this.props.moves.length - 1)}</h5> 
+//         {/* <MovesCount
+//           current_move_number={this.props.current_move_num}
+//         /> */}
+//         <h5>Current Move Number: {this.props.current_move_num}</h5>
+//         <ul className="moves-data">
+//           {this.props.moves.map((move, index) => {
+//             return (
+//               <div ref={index === this.props.current_move_num ? this.state.currentScrollRef : this.state.nullScrollRef}>
+//                 <MovesRow
+//                 // key={index.toString() + (index === this.props.current_move_num ? "t" : "f")}
+//                 key={index}
+//                 move={move}
+//                 move_number={index}
+//                 is_current={index === this.props.current_move_num ? true : false}
+//                 />
+//               </div>
+//             )
+//           })}
+//         </ul>
+//       </div>
+//     )
+//   }
+// }
+
+const Moves = (props: IMovesProps) => {
+  const currentScrollRef = useRef<HTMLDivElement>(null);
+  const nullScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollElementIndex = Math.max(0, props.current_move_num - 5)
+  const executeScroll = () => {
+    if (currentScrollRef.current) {
+      currentScrollRef.current.scrollIntoView()
     }
   }
 
-  render() {
-    const moves: Array<Move> = this.props.moves;
-    // console.log(this.props.current_move_num);
-    return (
-      <div className="moves-container">
-        <h3>Moves</h3>
-        {/* <MovesCount
-          current_move_number={this.props.current_move_num}
-        /> */}
-        <h5>Current Move Number: {this.props.current_move_num}</h5>
-        <ul className="moves-data">
-          {moves.map((move, index) => {
-            return (
+  useEffect(() => {
+    executeScroll();
+  })
+
+  return (
+    <div className="moves-container">
+      <h3>Moves</h3>
+      <h5>Number of Moves: {Math.max(0, props.moves.length - 1)}</h5> 
+      {/* <MovesCount
+        current_move_number={this.props.current_move_num}
+      /> */}
+      <h5>Current Move Number: {props.current_move_num}</h5>
+      <ul className="moves-data">
+        {props.moves.map((move, index) => {
+          return (
+            <div ref={index === scrollElementIndex ? currentScrollRef : nullScrollRef}>
               <MovesRow
-                // key={index.toString() + (index === this.props.current_move_num ? "t" : "f")}
-                key={index}
-                move={move}
-                move_number={index}
-                is_current={index === this.props.current_move_num ? true : false}
+              // key={index.toString() + (index === this.props.current_move_num ? "t" : "f")}
+              key={index}
+              move={move}
+              move_number={index}
+              is_current={index === props.current_move_num ? true : false}
               />
-            )
-          })}
-        </ul>
-      </div>
-    )
-  }
+            </div>
+          )
+        })}
+      </ul>
+    </div>
+  )
 }
+
+// const Moves = (props: IMovesProps) => {
+//   const [displayOffset, setDisplayOffset] = useState(0);
+//   const movesSubset = props.moves.slice(displayOffset, displayOffset + 100)
+
+//   const handleScroll = (e) => {
+//     console.log("scrolling");
+//     console.log("scrolling: ", e.currentTarget.scrolling);
+//     console.log("scrollTop: ", e.currentTarget.scrollTop);
+//     console.log("offsetHeight: ", e.currentTarget.offsetHeight);
+//   }
+
+//   return (
+//     <div className="moves-container" ref={targetRef}>
+//       <h3>Moves</h3>
+//       <h5>Number of Moves: {Math.max(0, props.moves.length - 1)}</h5> 
+//       <h5>Current Move Number: {props.current_move_num}</h5>
+//       <ul className="moves-data">
+//         {movesSubset.map((move, index) => {
+//           return (
+//             <MovesRow
+//               key={index + displayOffset}
+//               move={move}
+//               move_number={index + displayOffset}
+//               is_current={index + displayOffset === props.current_move_num ? true : false}
+//             />
+//           )
+//         })}
+//       </ul>
+//     </div>
+//   )
+// }
 
 interface INumberFormProps {
   generateStartingState: (n: number) => void,
