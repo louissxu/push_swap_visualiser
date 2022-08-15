@@ -1,6 +1,7 @@
-import { wait } from '@testing-library/user-event/dist/utils';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 import "./Visualiser.css";
+
+import { FixedSizeList as List} from "react-window";
 
 interface IBarProps {
   value: number,
@@ -249,31 +250,59 @@ const Moves = (props: IMovesProps) => {
     executeScroll();
   })
 
-  const movesSubset = props.moves.slice(scrollElementIndex, scrollElementIndex + 100);
+  const NewMovesRow = ({index, style}: {index: number, style: CSSProperties}) => {
+    return (
+      <div
+        ref={index === scrollElementIndex ? currentScrollRef : nullScrollRef}
+        key={index}
+        style={style}
+      >
+        <MovesRow
+          key={index}
+          move={props.moves[index]}
+          move_number={index}
+          is_current={index === props.current_move_num ? true : false}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="moves-container">
       <h3>Moves</h3>
       <h5>Number of Moves: {Math.max(0, props.moves.length - 1)}</h5> 
+      {/* <MovesCount
+        current_move_number={this.props.current_move_num}
+      /> */}
       <h5>Current Move Number: {props.current_move_num}</h5>
-      <ul className="moves-data">
-        {movesSubset.map((move, index) => {
+      <List
+        className="moves-data"
+        height={1000}
+        width={100}
+        itemCount={props.moves.length}
+        itemSize={20}
+      >
+        {NewMovesRow}
+      </List>
+
+      {/* <ul className="moves-data">
+        {props.moves.map((move, index) => {
           return (
             <div 
-              ref={index + scrollElementIndex === scrollElementIndex ? currentScrollRef : nullScrollRef}
-              key={index + scrollElementIndex}
+              ref={index === scrollElementIndex ? currentScrollRef : nullScrollRef}
+              key={index}
             >
               <MovesRow
               // key={index.toString() + (index === this.props.current_move_num ? "t" : "f")}
-              key={index + scrollElementIndex}
+              key={index}
               move={move}
-              move_number={index + scrollElementIndex}
-              is_current={index + scrollElementIndex === props.current_move_num ? true : false}
+              move_number={index}
+              is_current={index === props.current_move_num ? true : false}
               />
             </div>
           )
         })}
-      </ul>
+      </ul> */}
     </div>
   )
 }
