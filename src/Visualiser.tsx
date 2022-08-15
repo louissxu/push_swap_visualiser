@@ -389,7 +389,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           id="playback-speed"
           name="playback-speed"
           min="0"
-          max="51"
+          max="60"
           value={this.props.playbackFpsSliderValue.toString()}
           onChange={this.handlePlaybackSpeedChange.bind(this)}
         />
@@ -459,8 +459,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       stdout: "",
       stderr: "",
       max_value: this.props.values.length,
-      playback_fps_slider_value: 1,
-      playback_fps: 10,
+      playback_fps_slider_value: 23,
+      playback_fps: this.calculateNewFps(23),
       playback_dir: 0,
       playback_current_loop: null,
       frames: [{stack_a: this.props.values, stack_b: [] as Array<number>}],
@@ -623,6 +623,9 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   playbackJumpToFrameNumber(newFrame: number) {
+    if (newFrame === 0 || newFrame === this.state.moves.length - 1) {
+      this.playbackPause();
+    }
     if (this.state.frames.length > newFrame) {
       this.setState({
         current_move_num: newFrame,
@@ -642,10 +645,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   stepForward() {
     if (this.state.current_move_num < this.state.moves.length - 1) {
       this.playbackJumpToFrameNumber(this.state.current_move_num + 1);
-      // this.executeMove(this.state.moves[this.state.current_move_num + 1]);
-      // this.setState({
-      //   current_move_num: this.state.current_move_num + 1,  
-      // });
     } else {
       this.playbackPause();
     }  
@@ -654,21 +653,10 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   stepBackward() {
     if (this.state.current_move_num > 0) {
       this.playbackJumpToFrameNumber(this.state.current_move_num - 1);
-      // this.executeReverseMove(
-      //   this.state.moves[this.state.current_move_num], 
-      //   this.state.skipped_moves[this.state.current_move_num]
-      // )  
-      // this.setState({
-      //   current_move_num: this.state.current_move_num - 1,
-      // });  
     } else {
       this.playbackPause();
     }  
   }  
-
-  // timeout(delay: number) {
-  //   return new Promise((res) => setTimeout(res, delay));  
-  // }
 
   playbackPause() {
     this.setState({
@@ -701,6 +689,9 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }  
   
   doPlayback() {
+    const multiplier: number = Math.ceil(this.state.playback_fps / 60);
+    const newFps: number = this.state.playback_fps / multiplier;
+    console.log("multiplier is: " + multiplier + " and newFps is: " + newFps);
     if (this.state.playback_dir === 0) {
       if (this.state.playback_current_loop === null) {
         return;
@@ -711,14 +702,16 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       });  
       return;
     } else if (this.state.playback_dir === 1) {
-      this.stepForward();
+      this.playbackJumpToFrameNumber(Math.min(this.state.moves.length - 1, this.state.current_move_num + multiplier));
+      // this.stepForward();
     } else if (this.state.playback_dir === -1) {
-      this.stepBackward();
+      this.playbackJumpToFrameNumber(Math.max(0, this.state.current_move_num - multiplier));        
+      // this.stepBackward();
     }  
 
     const new_playback_loop = setTimeout(() => {
       this.doPlayback()
-    }, 1000 / this.state.playback_fps)  
+    }, 1000 / newFps)  
     this.setState({
       playback_current_loop: new_playback_loop,
     })  
@@ -818,11 +811,14 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     });  
   }  
 
-  updatePlaybackSpeed(newValue: number) {
-    const new_fps: number = 0.1 * (1.20 ** newValue);
+  calculateNewFps(exp: number) {
+    return 0.25 * (1.15 ** exp);
+  }
+
+  updatePlaybackSpeed(sliderValue: number) {
     this.setState({
-      playback_fps_slider_value: newValue,
-      playback_fps: new_fps,
+      playback_fps_slider_value: sliderValue,
+      playback_fps: this.calculateNewFps(sliderValue),
     })  
   }  
 
