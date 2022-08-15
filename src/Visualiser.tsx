@@ -249,27 +249,26 @@ const Moves = (props: IMovesProps) => {
     executeScroll();
   })
 
+  const movesSubset = props.moves.slice(scrollElementIndex, scrollElementIndex + 100);
+
   return (
     <div className="moves-container">
       <h3>Moves</h3>
       <h5>Number of Moves: {Math.max(0, props.moves.length - 1)}</h5> 
-      {/* <MovesCount
-        current_move_number={this.props.current_move_num}
-      /> */}
       <h5>Current Move Number: {props.current_move_num}</h5>
       <ul className="moves-data">
-        {props.moves.map((move, index) => {
+        {movesSubset.map((move, index) => {
           return (
             <div 
-              ref={index === scrollElementIndex ? currentScrollRef : nullScrollRef}
-              key={index}
+              ref={index + scrollElementIndex === scrollElementIndex ? currentScrollRef : nullScrollRef}
+              key={index + scrollElementIndex}
             >
               <MovesRow
               // key={index.toString() + (index === this.props.current_move_num ? "t" : "f")}
-              key={index}
+              key={index + scrollElementIndex}
               move={move}
-              move_number={index}
-              is_current={index === props.current_move_num ? true : false}
+              move_number={index + scrollElementIndex}
+              is_current={index + scrollElementIndex === props.current_move_num ? true : false}
               />
             </div>
           )
