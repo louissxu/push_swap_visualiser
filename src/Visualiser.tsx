@@ -790,6 +790,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       const stdout = data.stdout
       const stderr = data.stderr;
       const moves = stdout.trim().split("\n").map((elem: string) => this.stringToMove(elem));
+      // const formattedMoves = moves.map((str:string) => str[0].toUpperCase() + str.slice(1)).map((str:string) => "Move." + str).join(", ");
+      // console.log(formattedMoves); 
       if (moves.includes(null)) {
         this.setState({
           moves: [],
@@ -808,7 +810,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       }  
     }).catch(() => {
       console.log("boo");
-    });  
+    });
   }  
 
   calculateNewFps(exp: number) {
