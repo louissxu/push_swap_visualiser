@@ -1,3 +1,4 @@
+import { wait } from '@testing-library/user-event/dist/utils';
 import React, { useState, useRef, useEffect } from 'react';
 import "./Visualiser.css";
 
@@ -259,7 +260,10 @@ const Moves = (props: IMovesProps) => {
       <ul className="moves-data">
         {props.moves.map((move, index) => {
           return (
-            <div ref={index === scrollElementIndex ? currentScrollRef : nullScrollRef}>
+            <div 
+              ref={index === scrollElementIndex ? currentScrollRef : nullScrollRef}
+              key={index}
+            >
               <MovesRow
               // key={index.toString() + (index === this.props.current_move_num ? "t" : "f")}
               key={index}
@@ -365,7 +369,9 @@ interface IMenuProps {
   stepBackward: () => void,
   generateStartingState: (n: number) => void,
   getMoves: () => void,
-  playForward: () => void,
+  playbackPause: () => void,
+  playbackPlayForward: () => void,
+  playbackPlayBackward: () => void,
   updatePlaybackSpeed: (newValue: number) => void,
   playbackFps: number,
 }
@@ -394,8 +400,16 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
     this.props.getMoves();
   }
 
-  handlePlayForward() {
-    this.props.playForward();
+  handlePlaybackPause() {
+    this.props.playbackPause();
+  }
+  
+  handlePlaybackPlayForward() {
+    this.props.playbackPlayForward();
+  }
+  
+  handlePlaybackPlayBackward() {
+    this.props.playbackPlayBackward();
   }
 
   handlePlaybackSpeedChange(event: React.FormEvent<HTMLInputElement>) {
@@ -436,10 +450,21 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         <output>{this.props.playbackFps}</output>
         <br></br>
         <button
-          onClick={this.handlePlayForward.bind(this)}
+          onClick={this.handlePlaybackPlayBackward.bind(this)}
         >
-          Play
+          Play Backwards
         </button>
+        <button
+          onClick={this.handlePlaybackPause.bind(this)}
+        >
+          Pause
+        </button>
+        <button
+          onClick={this.handlePlaybackPlayForward.bind(this)}
+        >
+          Play Forwards
+        </button>
+
       </div>
     )
   }
@@ -462,6 +487,8 @@ interface IVisualiserState {
   stderr: string,
   max_value: number,
   playback_fps: number,
+  playback_dir: number,
+  playback_current_loop: null | ReturnType<typeof setTimeout>,
 }
 
 class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
@@ -480,6 +507,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       stderr: "",
       max_value: this.props.values.length,
       playback_fps: 10,
+      playback_dir: 0,
+      playback_current_loop: null,
     }
   }
   
@@ -728,18 +757,67 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     }
   }
 
-  timeout(delay: number) {
-    return new Promise((res) => setTimeout(res, delay));
+  // timeout(delay: number) {
+  //   return new Promise((res) => setTimeout(res, delay));
+  // }
+
+  playbackPause() {
+    this.setState({
+      playback_dir: 0,
+    }, this.doPlayback)
   }
 
-  playForward() {
-    if (this.state.current_move_num < this.state.moves.length - 1) {
-      setTimeout(() => {
-        this.stepForward();
-        this.playForward();
-      }, 1000 / this.state.playback_fps);
+  playbackPlayForward() {
+    if (this.state.playback_current_loop === null) {
+      this.setState({
+        playback_dir: 1,
+      }, this.doPlayback)
+    } else {
+      this.setState({
+        playback_dir: 1,
+      })
     }
   }
+
+  playbackPlayBackward() {
+    if (this.state.playback_current_loop === null) {
+      this.setState({
+        playback_dir: -1,
+      }, this.doPlayback)
+    } else {
+      this.setState({
+        playback_dir: -1,
+      })
+    }
+  }
+  
+  doPlayback() {
+    if (this.state.playback_dir === 0) {
+      if (this.state.playback_current_loop === null) {
+        return;
+      }
+      clearTimeout(this.state.playback_current_loop);
+      this.setState({
+        playback_current_loop: null,
+      });
+      return;
+    } else if (this.state.playback_dir === 1) {
+      this.stepForward();
+    } else if (this.state.playback_dir === -1) {
+      this.stepBackward();
+    }
+
+    const new_playback_loop = setTimeout(() => {
+      this.doPlayback()
+    }, 1000 / this.state.playback_fps)
+    this.setState({
+      playback_current_loop: new_playback_loop,
+    })
+  }
+
+  // playBackward() {
+  //   if (this.state.current_move_num)
+  // }
 
   // Fisher-yates shuffle
   // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -754,6 +832,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   // https://stackoverflow.com/a/29559488/9160572
   generateStartingState(n: number) {
     // console.log(n);
+    this.playbackPause();
     const new_stack_a = Array.from(Array(n).keys());
     this.shuffle(new_stack_a);
     const new_stack_b: Array<number> = [];
@@ -803,6 +882,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   getMoves() {
+    this.playbackPause();
     const url = this.generateQueryUrl(this.state.starting_stack_a);
     this.setState({
       stack_a: this.state.starting_stack_a,
@@ -853,7 +933,9 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           stepBackward={this.stepBackward.bind(this)}
           generateStartingState={this.generateStartingState.bind(this)}
           getMoves={this.getMoves.bind(this)}
-          playForward={this.playForward.bind(this)}
+          playbackPause={this.playbackPause.bind(this)}
+          playbackPlayForward={this.playbackPlayForward.bind(this)}
+          playbackPlayBackward={this.playbackPlayBackward.bind(this)}
           updatePlaybackSpeed={this.updatePlaybackSpeed.bind(this)}
           playbackFps={this.state.playback_fps}
         />
