@@ -691,7 +691,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   doPlayback() {
     const multiplier: number = Math.ceil(this.state.playback_fps / 60);
     const newFps: number = this.state.playback_fps / multiplier;
-    console.log("multiplier is: " + multiplier + " and newFps is: " + newFps);
     if (this.state.playback_dir === 0) {
       if (this.state.playback_current_loop === null) {
         return;
