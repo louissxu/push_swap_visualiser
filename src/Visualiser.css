@@ -16,6 +16,10 @@
   /* width: 300px; */
 }
 
+input[type="range"] {
+  width: 100%;
+}
+
 .moves-container {
   background-color: #b6bdc5;
   padding: 0px 20px 0px 20px;
