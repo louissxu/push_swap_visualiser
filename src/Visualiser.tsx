@@ -168,18 +168,26 @@ const Moves = (props: IMovesProps) => {
   })
 
   const NewMovesRow = ({index, style}: {index: number, style: CSSProperties}) => {
-    return (
-      <div
-        style={style}
-      >
-        <MovesRow
-          key={index}
-          move={props.moves[index]}
-          move_number={index}
-          is_current={index === props.current_move_num ? true : false}
+    if (index < props.moves.length && index >= 0){
+      return (
+        <div
+          style={style}
+        >
+          <MovesRow
+            move={props.moves[index]}
+            move_number={index}
+            is_current={index === props.current_move_num ? true : false}
+          />
+        </div>
+      )
+    } else {
+      return (
+        <div
+          style={style}
         />
-      </div>
-    )
+      )
+    }
+    
   }
 
   return (
@@ -266,7 +274,7 @@ interface IMenuProps {
   playbackFps: number,
   playbackMaxFrameCount: number,
   playbackCurrentFrameNumber: number,
-  updatePlaybackFrameNumber: (newValue: number) => void,
+  playbackJumpToFrameNumber: (newValue: number) => void,
 }
 
 interface IMenuState {
@@ -310,7 +318,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
   }
 
   handlePlaybackFrameNumberChange(event: React.FormEvent<HTMLInputElement>) {
-    this.props.updatePlaybackFrameNumber(parseInt(event.currentTarget.value));
+    this.props.playbackJumpToFrameNumber(parseInt(event.currentTarget.value));
   }
 
   render() {
@@ -396,11 +404,7 @@ interface IVisualiserProps {
 }
 
 interface IVisualiserState {
-  starting_stack_a: Array<number>,
-  stack_a: Array<number>,
-  stack_b: Array<number>,
   moves: Array<Move>,
-  skipped_moves: Array<Boolean>,
   current_move_num: number,
   error_parsing_moves: Boolean,
   stdout: string,
@@ -415,13 +419,8 @@ interface IVisualiserState {
 class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   constructor(props: IVisualiserProps) {
     super(props);
-    const skipped_moves: Array<boolean> = this.calculateSkippedMoves(this.props.moves, this.props.values.length)
     this.state = {
-      starting_stack_a: this.props.values,
-      stack_a: this.props.values,
-      stack_b: [],
       moves: this.props.moves,
-      skipped_moves: skipped_moves,
       current_move_num: 0,
       error_parsing_moves: false,
       stdout: "",
@@ -432,47 +431,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       playback_current_loop: null,
       frames: [{stack_a: this.props.values, stack_b: [] as Array<number>}],
     }
-  }
-  
-  calculateSkippedMoves (moves: Array<Move>, number_of_values: number): Array<boolean> {
-    let left_length = number_of_values;
-    let right_length = 0;
-    const skipped_moves = []
-    for (let i = 0; i < moves.length; i++) {
-      if (moves[i] === Move.Pa) {
-        if (right_length > 0) {
-          right_length--;
-          left_length++;
-          skipped_moves.push(false);
-        } else {
-          skipped_moves.push(true);
-        }
-      } else if (moves[i] === Move.Pb) {
-        if (left_length > 0) {
-          left_length--;
-          right_length++;
-          skipped_moves.push(false);
-        } else {
-          skipped_moves.push(true);
-        }
-      } else {
-        skipped_moves.push(false);
-      }
-    }
-    return skipped_moves;
-  }
-  
-  psPrimitiveSa() {
-    if (this.state.stack_a.length <= 1) {
-      return;
-    }
-    const new_stack_a: Array<number>= this.state.stack_a.slice(1, 2).concat(
-      this.state.stack_a.slice(0, 1),
-      this.state.stack_a.slice(2),
-    );
-    this.setState({
-      stack_a: new_stack_a,
-    })
   }
 
   psPrimitiveSaFunctional(frame: Frame): Frame {
@@ -490,19 +448,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     return newFrame;
   }
 
-  psPrimitiveSb() {
-    if (this.state.stack_b.length <= 1) {
-      return;
-    }
-    const new_stack_b: Array<number> = this.state.stack_b.slice(1, 2).concat(
-      this.state.stack_b.slice(0, 1),
-      this.state.stack_b.slice(2),
-    );
-    this.setState({
-      stack_b: new_stack_b,
-    })
-  }
-
   psPrimitiveSbFunctional(frame: Frame): Frame {
     if (frame.stack_b.length <= 1) {
       return frame;
@@ -518,27 +463,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     return newFrame;
   }
 
-  psPrimitiveSs() {
-    this.psPrimitiveSa();
-    this.psPrimitiveSb();
-  }
-
   psPrimitiveSsFunctional(frame: Frame): Frame {
     return this.psPrimitiveSaFunctional(this.psPrimitiveSbFunctional(frame));
-  }
-
-  psPrimitivePa() {
-    if (this.state.stack_b.length <= 0) {
-      return;
-    }
-    const new_stack_a: Array<number> = this.state.stack_b.slice(0, 1).concat(
-      this.state.stack_a.slice(),
-    )
-    const new_stack_b: Array<number> = this.state.stack_b.slice(1);
-    this.setState({
-      stack_a: new_stack_a,
-      stack_b: new_stack_b,
-    })
   }
 
   psPrimitivePaFunctional(frame: Frame): Frame {
@@ -555,20 +481,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     return newFrame;
   }
 
-  psPrimitivePb() {
-    if (this.state.stack_a.length <= 0) {
-      return;
-    }
-    const new_stack_a: Array<number> = this.state.stack_a.slice(1);
-    const new_stack_b: Array<number> = this.state.stack_a.slice(0, 1).concat(
-      this.state.stack_b.slice(),
-    );
-    this.setState({
-      stack_a: new_stack_a,
-      stack_b: new_stack_b,
-    })
-  }
-
   psPrimitivePbFunctional(frame: Frame): Frame {
     if (frame.stack_a.length <= 0) {
       return frame;
@@ -581,18 +493,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       )
     }
     return newFrame;
-  }
-
-  psPrimitiveRa() {
-    if (this.state.stack_a.length <= 0) {
-      return;
-    }
-    const new_stack_a: Array<number> = this.state.stack_a.slice(1).concat(
-      this.state.stack_a.slice(0, 1),
-    );
-    this.setState({
-      stack_a: new_stack_a,
-    })
   }
 
   psPrimitiveRaFunctional(frame: Frame): Frame {
@@ -609,18 +509,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     return newFrame;
   }
 
-  psPrimitiveRb() {
-    if (this.state.stack_b.length <= 0) {
-      return;
-    }
-    const new_stack_b: Array<number> = this.state.stack_b.slice(1).concat(
-      this.state.stack_b.slice(0, 1),
-    );
-    this.setState({
-      stack_b: new_stack_b,
-    })
-  }  
-
   psPrimitiveRbFunctional(frame: Frame): Frame {
     if (frame.stack_b.length <= 0) {
       return frame;
@@ -635,25 +523,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     return newFrame;
   }
 
-  psPrimitiveRr() {
-    this.psPrimitiveRa();
-    this.psPrimitiveRb();
-  }
-
   psPrimitiveRrFunctional(frame: Frame): Frame {
     return this.psPrimitiveRaFunctional(this.psPrimitiveRbFunctional(frame));
-  }
-
-  psPrimitiveRra() {
-    if (this.state.stack_a.length <= 0) {
-      return;
-    }
-    const new_stack_a: Array<number> = this.state.stack_a.slice(-1).concat(
-      this.state.stack_a.slice(0, -1),
-    );
-    this.setState({
-      stack_a: new_stack_a,
-    })
   }
 
   psPrimitiveRraFunctional(frame: Frame): Frame {
@@ -670,18 +541,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     return newFrame;
   }
 
-  psPrimitiveRrb() {
-    if (this.state.stack_b.length <= 0) {
-      return;
-    }
-    const new_stack_b: Array<number> = this.state.stack_b.slice(-1).concat(
-      this.state.stack_b.slice(0, -1),
-    );
-    this.setState({
-      stack_b: new_stack_b,
-    })
-  }
-
   psPrimitiveRrbFunctional(frame: Frame): Frame {
     if (frame.stack_b.length <= 0) {
       return frame;
@@ -694,11 +553,6 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       )
     }
     return newFrame;
-  }
-
-  psPrimitiveRrr() {
-    this.psPrimitiveRra();
-    this.psPrimitiveRrb();
   }
 
   psPrimitiveRrrFunctional(frame: Frame): Frame {
@@ -734,171 +588,107 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     }
   }
 
-  executeMove(move: Move) {
-    switch(move){
-      case Move.Sa:
-        this.psPrimitiveSa();
-        break;
-      case Move.Sb:
-        this.psPrimitiveSb();
-        break;
-      case Move.Ss:
-        this.psPrimitiveSs();
-        break;
-      case Move.Pa:
-        this.psPrimitivePa();
-        break;
-      case Move.Pb:
-        this.psPrimitivePb();
-        break;
-      case Move.Ra:
-        this.psPrimitiveRa();
-        break;
-      case Move.Rb:
-        this.psPrimitiveRb();
-        break;
-      case Move.Rr:
-        this.psPrimitiveRr();
-        break;
-      case Move.Rra:
-        this.psPrimitiveRra();
-        break;
-      case Move.Rrb:
-        this.psPrimitiveRrb();
-        break;
-      case Move.Rrr:
-        this.psPrimitiveRrr();
-        break;
-    }
-  }
-
-  executeReverseMove(move: Move, skipped: Boolean) {
-    if (skipped === true) {
+  playbackJumpToFrameNumber(newFrame: number) {
+    if (this.state.frames.length > newFrame) {
+      this.setState({
+        current_move_num: newFrame,
+      })
       return;
     }
-    switch(move){
-      case Move.Sa:
-        this.psPrimitiveSa();
-        break;
-      case Move.Sb:
-        this.psPrimitiveSb();
-        break;
-      case Move.Ss:
-        this.psPrimitiveSs();
-        break;
-      case Move.Pa:
-        this.psPrimitivePb();
-        break;
-      case Move.Pb:
-        this.psPrimitivePa();
-        break;
-      case Move.Ra:
-        this.psPrimitiveRra();
-        break;
-      case Move.Rb:
-        this.psPrimitiveRrb();
-        break;
-      case Move.Rr:
-        this.psPrimitiveRrr();
-        break;
-      case Move.Rra:
-        this.psPrimitiveRa();
-        break;
-      case Move.Rrb:
-        this.psPrimitiveRb();
-        break;
-      case Move.Rrr:
-        this.psPrimitiveRr();
-        break;
+    let frame: Frame = this.state.frames[this.state.frames.length - 1];
+    for (let i = this.state.frames.length - 1; i < newFrame; i++) {
+      frame = this.frameApplyMove(frame, this.state.moves[i + 1]);
+      this.state.frames.push(frame);
     }
+    this.setState({
+      current_move_num: newFrame,
+    })
   }
 
   stepForward() {
     if (this.state.current_move_num < this.state.moves.length - 1) {
-      this.executeMove(this.state.moves[this.state.current_move_num + 1]);
-      this.setState({
-        current_move_num: this.state.current_move_num + 1,
-      });
+      this.playbackJumpToFrameNumber(this.state.current_move_num + 1);
+      // this.executeMove(this.state.moves[this.state.current_move_num + 1]);
+      // this.setState({
+      //   current_move_num: this.state.current_move_num + 1,  
+      // });
     } else {
       this.playbackPause();
-    }
-  }
+    }  
+  }  
 
   stepBackward() {
     if (this.state.current_move_num > 0) {
-      this.executeReverseMove(
-        this.state.moves[this.state.current_move_num], 
-        this.state.skipped_moves[this.state.current_move_num]
-      )
-      this.setState({
-        current_move_num: this.state.current_move_num - 1,
-      });
+      this.playbackJumpToFrameNumber(this.state.current_move_num - 1);
+      // this.executeReverseMove(
+      //   this.state.moves[this.state.current_move_num], 
+      //   this.state.skipped_moves[this.state.current_move_num]
+      // )  
+      // this.setState({
+      //   current_move_num: this.state.current_move_num - 1,
+      // });  
     } else {
       this.playbackPause();
-    }
-  }
+    }  
+  }  
 
   // timeout(delay: number) {
-  //   return new Promise((res) => setTimeout(res, delay));
+  //   return new Promise((res) => setTimeout(res, delay));  
   // }
 
   playbackPause() {
     this.setState({
       playback_dir: 0,
-    }, this.doPlayback)
-  }
+    }, this.doPlayback)  
+  }  
 
   playbackPlayForward() {
     if (this.state.playback_current_loop === null) {
       this.setState({
         playback_dir: 1,
-      }, this.doPlayback)
+      }, this.doPlayback)  
     } else {
       this.setState({
         playback_dir: 1,
-      })
-    }
-  }
+      })  
+    }  
+  }  
 
   playbackPlayBackward() {
     if (this.state.playback_current_loop === null) {
       this.setState({
         playback_dir: -1,
-      }, this.doPlayback)
+      }, this.doPlayback)  
     } else {
       this.setState({
         playback_dir: -1,
-      })
-    }
-  }
+      })  
+    }  
+  }  
   
   doPlayback() {
     if (this.state.playback_dir === 0) {
       if (this.state.playback_current_loop === null) {
         return;
-      }
+      }  
       clearTimeout(this.state.playback_current_loop);
       this.setState({
         playback_current_loop: null,
-      });
+      });  
       return;
     } else if (this.state.playback_dir === 1) {
       this.stepForward();
     } else if (this.state.playback_dir === -1) {
       this.stepBackward();
-    }
+    }  
 
     const new_playback_loop = setTimeout(() => {
       this.doPlayback()
-    }, 1000 / this.state.playback_fps)
+    }, 1000 / this.state.playback_fps)  
     this.setState({
       playback_current_loop: new_playback_loop,
-    })
-  }
-
-  // playBackward() {
-  //   if (this.state.current_move_num)
-  // }
+    })  
+  }  
 
   // Fisher-yates shuffle
   // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -906,8 +696,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-  }
+    }  
+  }  
 
   // Generating range array
   // https://stackoverflow.com/a/29559488/9160572
@@ -919,21 +709,17 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     const new_stack_b: Array<number> = [];
     const new_moves: Array<Move> = [];
     this.setState({
-      starting_stack_a: new_stack_a,
-      stack_a: new_stack_a,
-      stack_b: new_stack_b,
       moves: new_moves,
-      skipped_moves: [],
       current_move_num: 0,
       max_value: new_stack_a.length,
-      frames: [{stack_a: new_stack_a, stack_b: [] as Array<number>}]
-    })
-  }
+      frames: [{stack_a: new_stack_a, stack_b: new_stack_b}]
+    })  
+  }  
 
   generateQueryUrl(nums: Array<number>) {
     const url = "http://127.0.0.1:8080?" + nums.join(",");
     return url;
-  }
+  }  
 
   stringToMove(str: string): Move | null {
     switch(str){
@@ -959,18 +745,17 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         return Move.Rrb;
       case "rrr":
         return Move.Rrr;
-    }
+    }    
     return null;
-  }
+  }  
 
   getMoves() {
     this.playbackPause();
-    const url = this.generateQueryUrl(this.state.starting_stack_a);
+    const url = this.generateQueryUrl(this.state.frames[0].stack_a);
     this.setState({
-      stack_a: this.state.starting_stack_a,
-      stack_b: [],
       current_move_num: 0,
-    })
+      frames: this.state.frames.slice(0, 1),
+    })  
     fetch(url).then((response) => {
       return response.text();
     }).then((text) => {
@@ -984,8 +769,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           error_parsing_moves: true,
           stdout: stdout,
           stderr: stderr,
-          skipped_moves: [],
-        })
+        })  
       } else {
         const moves_with_start = [Move.Start, ...moves];
         this.setState({
@@ -993,74 +777,18 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           error_parsing_moves: false,
           stdout: stdout,
           stderr: stderr,
-          skipped_moves: this.calculateSkippedMoves(moves_with_start, this.state.stack_a.length)
-        })
-      }
+        })  
+      }  
     }).catch(() => {
       console.log("boo");
-    });
-  }
+    });  
+  }  
 
   updatePlaybackSpeed(newValue: number) {
     this.setState({
       playback_fps: newValue,
-    })
-  }
-
-  updatePlaybackFrameNumber(newFrame: number) {
-    if (this.state.frames.length > newFrame) {
-      this.setState({
-        stack_a: this.state.frames[newFrame].stack_a,
-        stack_b: this.state.frames[newFrame].stack_b,
-        current_move_num: newFrame,
-      })
-      return;
-    }
-    let frame: Frame = this.state.frames[this.state.frames.length - 1];
-    for (let i = this.state.frames.length - 1; i < newFrame; i++) {
-      frame = this.frameApplyMove(frame, this.state.moves[i + 1]);
-      this.state.frames.push(frame);
-    }
-    this.setState({
-      stack_a: frame.stack_a,
-      stack_b: frame.stack_b,
-      current_move_num: newFrame,
-    })
-
-
-    // const frameDelta = newFrame - this.state.current_move_num;
-    // let i = 0;
-    // while (this.state.current_move_num + i < newFrame) {
-    //   console.log("executing move number: " + (this.state.current_move_num + i).toString())
-    //   this.executeMove(this.state.moves[this.state.current_move_num + 1 + i])
-    //   i++;
-    // }
-    // while (this.state.current_move_num + i > newFrame) {
-    //   this.executeReverseMove(
-    //     this.state.moves[this.state.current_move_num + i],
-    //     this.state.skipped_moves[this.state.current_move_num + i]
-    //   )
-    //   i--;
-    // }
-    // this.setState({
-    //   current_move_num: newFrame,
-    // })
-    // if (newFrame === 0 || newFrame === this.state.moves.length)
-    // {
-    //   this.playbackPause();
-    // }
-    // console.log(i);
-
-    // for (let i = 0; i < frameDelta; i++) {
-    //   this.stepForward();
-    // }
-    // for (let i = 0; i > frameDelta; i--) {
-    //   this.stepBackward();
-    // }
-    // this.setState({
-    //   current_move_num: newFrame,
-    // })
-  }
+    })  
+  }  
 
   render() {
     return (
@@ -1077,13 +805,13 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           playbackFps={this.state.playback_fps}
           playbackMaxFrameCount={this.state.moves.length - 1}
           playbackCurrentFrameNumber={this.state.current_move_num}
-          updatePlaybackFrameNumber={this.updatePlaybackFrameNumber.bind(this)}
+          playbackJumpToFrameNumber={this.playbackJumpToFrameNumber.bind(this)}
         />
         <Moves moves={this.state.moves} current_move_num={this.state.current_move_num}/>
         <div className="stack-spacer"></div>
-        <Stack values={this.state.stack_a} max_value={this.state.max_value} title="Stack A"/>
+        <Stack values={this.state.frames[this.state.current_move_num].stack_a} max_value={this.state.max_value} title="Stack A"/>
         <div className="stack-spacer"></div>
-        <Stack values={this.state.stack_b} max_value={this.state.max_value} title="Stack B"/>
+        <Stack values={this.state.frames[this.state.current_move_num].stack_b} max_value={this.state.max_value} title="Stack B"/>
         <div className="stack-spacer"></div>
       </div>
     )
