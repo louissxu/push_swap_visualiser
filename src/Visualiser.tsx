@@ -154,13 +154,12 @@ interface IMovesProps {
 }
 
 const Moves = (props: IMovesProps) => {
-  const currentScrollRef = useRef<HTMLDivElement>(null);
-  const nullScrollRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<List>(null);
 
-  const scrollElementIndex = Math.max(0, props.current_move_num - 5)
+  const scrollElementIndex = Math.max(0, props.current_move_num - 5);
   const executeScroll = () => {
-    if (currentScrollRef.current) {
-      currentScrollRef.current.scrollIntoView()
+    if (listRef.current) {
+      listRef.current.scrollToItem(scrollElementIndex, "start");
     }
   }
 
@@ -171,8 +170,6 @@ const Moves = (props: IMovesProps) => {
   const NewMovesRow = ({index, style}: {index: number, style: CSSProperties}) => {
     return (
       <div
-        ref={index === scrollElementIndex ? currentScrollRef : nullScrollRef}
-        key={index}
         style={style}
       >
         <MovesRow
@@ -196,6 +193,7 @@ const Moves = (props: IMovesProps) => {
         width={100}
         itemCount={props.moves.length}
         itemSize={20}
+        ref={listRef}
       >
         {NewMovesRow}
       </List>
