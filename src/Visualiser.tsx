@@ -302,7 +302,8 @@ interface IMenuProps {
   playbackPlayForward: () => void,
   playbackPlayBackward: () => void,
   updatePlaybackSpeed: (newValue: number) => void,
-  playbackFps: number,
+  playbackFpsRounded: number,
+  playbackFpsSliderValue: number,
   playbackMaxFrameCount: number,
   playbackCurrentFrameNumber: number,
   playbackJumpToFrameNumber: (newValue: number) => void,
@@ -381,15 +382,15 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         </button>
         <br/>
         <label htmlFor="playback-speed">Playback Speed: </label>
-        <output>{this.props.playbackFps} </output>
+        <output>{this.props.playbackFpsRounded} </output>
         fps
         <input
           type="range"
           id="playback-speed"
           name="playback-speed"
-          min="1"
-          max="100"
-          value={this.props.playbackFps.toString()}
+          min="0"
+          max="51"
+          value={this.props.playbackFpsSliderValue.toString()}
           onChange={this.handlePlaybackSpeedChange.bind(this)}
         />
         <br></br>
@@ -441,6 +442,7 @@ interface IVisualiserState {
   stdout: string,
   stderr: string,
   max_value: number,
+  playback_fps_slider_value: number,
   playback_fps: number,
   playback_dir: number,
   playback_current_loop: null | ReturnType<typeof setTimeout>,
@@ -457,6 +459,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       stdout: "",
       stderr: "",
       max_value: this.props.values.length,
+      playback_fps_slider_value: 1,
       playback_fps: 10,
       playback_dir: 0,
       playback_current_loop: null,
@@ -816,8 +819,10 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }  
 
   updatePlaybackSpeed(newValue: number) {
+    const new_fps: number = 0.1 * (1.20 ** newValue);
     this.setState({
-      playback_fps: newValue,
+      playback_fps_slider_value: newValue,
+      playback_fps: new_fps,
     })  
   }  
 
@@ -833,7 +838,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           playbackPlayForward={this.playbackPlayForward.bind(this)}
           playbackPlayBackward={this.playbackPlayBackward.bind(this)}
           updatePlaybackSpeed={this.updatePlaybackSpeed.bind(this)}
-          playbackFps={this.state.playback_fps}
+          playbackFpsRounded={parseFloat(this.state.playback_fps.toPrecision(2))}
+          playbackFpsSliderValue={this.state.playback_fps_slider_value}
           playbackMaxFrameCount={this.state.moves.length - 1}
           playbackCurrentFrameNumber={this.state.current_move_num}
           playbackJumpToFrameNumber={this.playbackJumpToFrameNumber.bind(this)}
