@@ -132,25 +132,42 @@ class MovesRow extends React.PureComponent<IMovesRowProps, IMovesRowState> {
     }
   }
   render() {
-    if (this.props.is_current) {
-      return (
-        <li className="moves-current-move">
-          {this.props.move}
-        </li>
-      )
+    if (this.props.move === Move.Start){
+      if (this.props.is_current) {
+        return (
+          <li className="moves-current-move">
+            {this.props.move}
+          </li>
+        )
+      } else {
+        return (
+          <li>
+            {this.props.move}
+          </li>
+        )
+      }
     } else {
-      return (
-        <li>
-          {this.props.move}
-        </li>
-      )
+      if (this.props.is_current) {
+        return (
+          <li className="moves-current-move">
+            {this.props.move_number - 1} - {this.props.move}
+          </li>
+        )
+      } else {
+        return (
+          <li>
+            {this.props.move_number - 1} - {this.props.move}
+          </li>
+        )
+      }
     }
   }
 }
 
 interface IMovesProps {
-  moves: Array<Move>
-  current_move_num: number
+  moves: Array<Move>,
+  current_move_num: number,
+  jumpToMoveNumber: (moveNumber: number) => void,
 }
 
 const Moves = (props: IMovesProps) => {
@@ -158,10 +175,11 @@ const Moves = (props: IMovesProps) => {
   const listContainerRef = useRef<HTMLDivElement>(null);
   const [listContainerHeight, setListContainerHeight] = useState(0);
   
-  const scrollElementIndex = Math.max(0, props.current_move_num - 5);
+  // const scrollElementIndex = Math.max(0, props.current_move_num - 5);
+  const scrollElementIndex = props.current_move_num;
   const executeScroll = () => {
     if (listRef.current) {
-      listRef.current.scrollToItem(scrollElementIndex, "start");
+      listRef.current.scrollToItem(scrollElementIndex, "smart");
     }
   }
   
@@ -191,6 +209,7 @@ const Moves = (props: IMovesProps) => {
       return (
         <div
           style={style}
+          onClick={props.jumpToMoveNumber.bind(this, index)}
         >
           <MovesRow
             move={props.moves[index]}
@@ -733,7 +752,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     const new_stack_a = Array.from(Array(n).keys());
     this.shuffle(new_stack_a);
     const new_stack_b: Array<number> = [];
-    const new_moves: Array<Move> = [];
+    const new_moves: Array<Move> = [Move.Start];
     this.setState({
       moves: new_moves,
       current_move_num: 0,
@@ -841,7 +860,11 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           playbackCurrentFrameNumber={this.state.current_move_num}
           playbackJumpToFrameNumber={this.playbackJumpToFrameNumber.bind(this)}
         />
-        <Moves moves={this.state.moves} current_move_num={this.state.current_move_num}/>
+        <Moves
+          moves={this.state.moves}
+          current_move_num={this.state.current_move_num}
+          jumpToMoveNumber={this.playbackJumpToFrameNumber.bind(this)}
+        />
         <div className="stack-spacer"></div>
         <Stack values={this.state.frames[this.state.current_move_num].stack_a} max_value={this.state.max_value} title="Stack A"/>
         <div className="stack-spacer"></div>
