@@ -28,7 +28,13 @@
   box-sizing: border-box;
 }
 
-.moves-data {
+.moves-subcontainer {
+  flex: 0 1 100vh;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.moves-content {
   /* flex: 1 1 auto; */
   list-style-type: none;
   overflow: scroll;

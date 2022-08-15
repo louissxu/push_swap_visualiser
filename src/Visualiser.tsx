@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 import "./Visualiser.css";
 
-import { FixedSizeList as List} from "react-window";
+import { VariableSizeList as List} from "react-window";
 
 interface IBarProps {
   value: number,
@@ -155,16 +155,35 @@ interface IMovesProps {
 
 const Moves = (props: IMovesProps) => {
   const listRef = useRef<List>(null);
-
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const [listContainerHeight, setListContainerHeight] = useState(0);
+  
   const scrollElementIndex = Math.max(0, props.current_move_num - 5);
   const executeScroll = () => {
     if (listRef.current) {
       listRef.current.scrollToItem(scrollElementIndex, "start");
     }
   }
-
+  
   useEffect(() => {
     executeScroll();
+  })
+  
+  const handleResize = () => {
+    if (listContainerRef.current) {
+      setListContainerHeight(listContainerRef.current.offsetHeight);
+    }
+  }
+  
+  useEffect(() => {
+    handleResize()
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    }
   })
 
   const NewMovesRow = ({index, style}: {index: number, style: CSSProperties}) => {
@@ -187,7 +206,13 @@ const Moves = (props: IMovesProps) => {
         />
       )
     }
-    
+  }
+
+  const getItemSize = (index: number) => {
+    // if (index === props.moves.length - 1) {
+    //   return 100;
+    // }
+    return 20;
   }
 
   return (
@@ -195,16 +220,22 @@ const Moves = (props: IMovesProps) => {
       <h3>Moves</h3>
       <h5>Number of Moves: {Math.max(0, props.moves.length - 1)}</h5> 
       <h5>Current Move Number: {props.current_move_num}</h5>
-      <List
-        className="moves-data"
-        height={1000}
-        width={100}
-        itemCount={props.moves.length}
-        itemSize={20}
-        ref={listRef}
+      <div
+        className="moves-subcontainer"
+        ref={listContainerRef}
       >
-        {NewMovesRow}
-      </List>
+        <List
+          className="moves-content"
+          height={listContainerHeight}
+          width={100}
+          itemCount={props.moves.length}
+          itemSize={getItemSize}
+          ref={listRef}
+        >
+          {NewMovesRow}
+          {/* <div style={{height: "150px"}}></div> */}
+        </List>
+      </div>
     </div>
   )
 }
