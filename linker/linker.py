@@ -92,9 +92,10 @@ def parse_argv_to_path(argv):
 
 if __name__ == "__main__":
   ps_path = parse_argv_to_path(sys.argv)
-  print(ps_path.parent)
-  print(ps_path.name)
   if not ps_path:
     print("Exiting")
   else:
+    print(f"Directory: {ps_path.parent}")
+    print(f"File name: {ps_path.name}")
+    print("Ctrl + c to stop")
     start_webserver()
