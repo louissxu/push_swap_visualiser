@@ -816,7 +816,9 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       moves: new_moves,
       current_move_num: 0,
       max_value: new_stack_a.length,
-      frames: [{stack_a: new_stack_a, stack_b: new_stack_b}]
+      frames: [{stack_a: new_stack_a, stack_b: new_stack_b}],
+      stdout: "",
+      stderr: "",
     })  
   }  
 
@@ -827,7 +829,9 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       moves: [Move.Start],
       current_move_num: 0,
       max_value: nums.length,
-      frames: [{stack_a: nums, stack_b: ([] as Array<number>)}]
+      frames: [{stack_a: nums, stack_b: ([] as Array<number>)}],
+      stdout: "",
+      stderr: "",
     })
   }
 
