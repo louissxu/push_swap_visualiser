@@ -316,7 +316,12 @@ interface IMenuProps {
   stepForward: () => void,
   stepBackward: () => void,
   generateStartingState: (n: number) => void,
+  generateStartingStateWithInputString: (s: string) => void,
+  inputArgs: Array<number>,
   getMoves: () => void,
+  programStdout: string,
+  programStderr: string,
+  programParsedMoves: Array<Move>,
   playbackPause: () => void,
   playbackPlayForward: () => void,
   playbackPlayBackward: () => void,
@@ -329,15 +334,34 @@ interface IMenuProps {
 }
 
 interface IMenuState {
-
+  inputArgsFieldLocked: boolean
 }
 
 class Menu extends React.Component<IMenuProps, IMenuState> {
   constructor(props: IMenuProps) {
     super(props)
     this.state = {
-
+      inputArgsFieldLocked: true,
     }
+  }
+
+  formatArgsForDisplay(args: Array<number>) {
+    return (args.join(" "));
+  }
+
+  toggleInputArgsFieldLock() {
+    this.setState({
+      inputArgsFieldLocked: !this.state.inputArgsFieldLocked
+    })
+  }
+
+  handleInputArgsFieldChange(event: React.FormEvent<HTMLInputElement>) {
+    const argString = event.currentTarget.value;
+    this.props.generateStartingStateWithInputString(argString);
+  }
+
+  formatMovesForDisplay(moves: Array<Move>) {
+    return (moves.slice(1).join("\n"))
   }
 
   handleStepForward() {
@@ -383,11 +407,46 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         <NumberForm
           generateStartingState={this.props.generateStartingState}
         />
+        <label htmlFor="input_args">Input Args</label>
+        <input
+          id="input_args"
+          type="text"
+          value={this.formatArgsForDisplay(this.props.inputArgs)}
+          disabled={this.state.inputArgsFieldLocked}
+          onChange={this.handleInputArgsFieldChange.bind(this)}
+        />
+        {/* <button
+          onClick={this.toggleInputArgsFieldLock.bind(this)}
+        >
+          Lock/Unlock editing
+        </button> */}
+        <h4>Moves Controls</h4>
         <button
           onClick={this.handleGetMoves.bind(this)}
         >
           Get Moves
-        </button>
+        </button><br/>
+        <label htmlFor="stdout">stdout</label><br/>
+        <textarea
+          id="stdout"
+          // type="text"
+          value={this.props.programStdout}
+          disabled={true}
+        /><br/>
+        <label htmlFor="stderr">stderr</label><br/>
+        <textarea
+          id="stderr"
+          // type="text"
+          value={this.props.programStderr}
+          disabled={true}
+        /><br/>
+        <label htmlFor="movesInput">Parsed Moves</label><br/>
+        <textarea
+          id="movesInput"
+          // type="text"
+          value={this.formatMovesForDisplay(this.props.programParsedMoves)}
+          disabled={true}
+        /><br/>
         <h4>Playback Controls</h4>
         <button
           onClick={this.handleStepBackward.bind(this)}
@@ -761,6 +820,17 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     })  
   }  
 
+  generateStartingStateWithInputString(s: string) {
+    this.playbackPause();
+    const nums: Array<number> = s.split(" ").map(elem => parseInt(elem)).filter(elem => !Number.isNaN(elem))
+    this.setState({
+      moves: [Move.Start],
+      current_move_num: 0,
+      max_value: nums.length,
+      frames: [{stack_a: nums, stack_b: ([] as Array<number>)}]
+    })
+  }
+
   generateQueryUrl(nums: Array<number>) {
     const url = "http://127.0.0.1:8080?" + nums.join(",");
     return url;
@@ -849,7 +919,12 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           stepForward={this.stepForward.bind(this)}
           stepBackward={this.stepBackward.bind(this)}
           generateStartingState={this.generateStartingState.bind(this)}
+          generateStartingStateWithInputString={this.generateStartingStateWithInputString.bind(this)}
+          inputArgs={this.state.frames[0].stack_a}
           getMoves={this.getMoves.bind(this)}
+          programStdout={this.state.stdout}
+          programStderr={this.state.stderr}
+          programParsedMoves={this.state.moves}
           playbackPause={this.playbackPause.bind(this)}
           playbackPlayForward={this.playbackPlayForward.bind(this)}
           playbackPlayBackward={this.playbackPlayBackward.bind(this)}
