@@ -473,6 +473,50 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
   }
 }
 
+interface IMenuMovesProps {
+
+}
+
+interface IMenuMovesState {
+
+}
+
+class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
+  constructor(props: IMenuMovesProps) {
+    super(props)
+    this.state = {
+
+    }
+  }
+
+  render() {
+    return (
+      <div className="menu-moves">
+        <h4>Moves Controls</h4>
+        <fieldset>
+          <legend>Select moves source:</legend>
+          <div>
+            <input type="radio" id="linker" name="moves-source" value="linker" defaultChecked/>
+            <label htmlFor="linker">
+              Python Linker<br/>
+              <span>link to linker</span>
+            <br/><br/>
+            </label>
+          </div>
+          <div>
+            <input type="radio" id="solution-louissxu" name="moves-source" value="solution-louissxu"/>
+            <label htmlFor="solution-louissxu">
+              Solution - @louissxu<br/>
+              <span>link to github</span>
+            <br/>
+            </label>
+          </div>
+        </fieldset>
+      </div>
+    )
+  }
+}
+
 interface IMenuProps {
   stepForward: () => void,
   stepBackward: () => void,
@@ -602,6 +646,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         >
           Lock/Unlock editing
         </button> */}
+        <MenuMoves/>
         <h4>Moves Controls</h4>
         <button
           onClick={this.handleGetMoves.bind(this)}
