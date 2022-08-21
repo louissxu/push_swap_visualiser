@@ -7,6 +7,7 @@ interface IBarProps {
   value: number,
   key: number,
   max_value: number,
+  num_values: number,
   available_width: number,
   available_height: number,
 }
@@ -23,8 +24,8 @@ class Bar extends React.PureComponent<IBarProps, IBarState> {
   }
   render() {
     const width: number = (this.props.value + 1) * this.props.available_width / this.props.max_value;
-    const height: number = Math.max(0, Math.min(50, this.props.available_height / this.props.max_value));
-    const hue: number = 240 - (240 / this.props.max_value * this.props.value);
+    const height: number = Math.max(0, Math.min(50, this.props.available_height / this.props.num_values));
+    const hue: number = 240 - (240 / Math.max(1, (this.props.max_value - 1))* this.props.value);
     let text: string | null = this.props.value.toString();
     if (height < 10) {
       text = null;
@@ -47,6 +48,7 @@ class Bar extends React.PureComponent<IBarProps, IBarState> {
 interface IStackProps {
   values: Array<number>,
   max_value: number,
+  num_values: number,
   title: string,
 }
 
@@ -73,12 +75,13 @@ const Stack = (props: IStackProps) => {
     }
   })
     
-  const renderBar = (val: number, key: number, max_value: number, stack_width: number, stack_height: number) => {
+  const renderBar = (val: number, key: number, max_value: number, num_values: number, stack_width: number, stack_height: number) => {
     return (
       <Bar
         value={val}
         key={key}
         max_value={max_value}
+        num_values={num_values}
         available_width={stack_width - 10}
         available_height={stack_height - 10}
       />
@@ -92,7 +95,7 @@ const Stack = (props: IStackProps) => {
       <h3 className="stack-title">{props.title}</h3>
       <div className="stack-subcontainer" ref={targetRef}>
         <ul className="stack-content">
-          {values.map((elem) => renderBar(elem, elem, props.max_value, stackSize.width, stackSize.height))}
+          {values.map((elem) => renderBar(elem, elem, props.max_value, props.num_values, stackSize.width, stackSize.height))}
         </ul>
       </div>
     </div>
@@ -312,12 +315,172 @@ class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
   }
 }
 
+interface IMenuInputArgsProps {
+  inputArgs: Array<number>,
+  inputArgsParseError: Boolean,
+  updateInputArgs: (parseError: Boolean, newArr: Array<number>) => void,
+  // updateInputArgsParseError: (isError: Boolean) => void,
+}
+
+interface IMenuInputArgsState {
+  inputArgsGeneratorNumberString: string,
+  inputArgsEntryString: string,
+  // inputArgsEntryStringParseError: Boolean
+  manualEntryUnlocked: Boolean,
+}
+
+class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsState> {
+  constructor(props: IMenuInputArgsProps) {
+    super(props)
+    this.state = {
+      inputArgsGeneratorNumberString: this.props.inputArgs.length.toString(),
+      inputArgsEntryString: this.inputArgsToString(this.props.inputArgs),
+      // // inputArgsEntryStringParseError: false,
+      manualEntryUnlocked: false,
+    }
+
+    this.handleInputArgsGeneratorNumberChange = this.handleInputArgsGeneratorNumberChange.bind(this);
+    this.handleInputArgsGeneratorSubmit = this.handleInputArgsGeneratorSubmit.bind(this);
+    this.unlockRawInputArgsEntry = this.unlockRawInputArgsEntry.bind(this);
+    this.handleInputArgManualEntryChange = this.handleInputArgManualEntryChange.bind(this);
+  }
+
+  handleInputArgsGeneratorNumberChange(event: React.FormEvent<HTMLInputElement>) {
+    this.setState({
+      inputArgsGeneratorNumberString: event.currentTarget.value,
+    })
+  }
+
+  handleInputArgsGeneratorSubmit(event: React.MouseEvent<HTMLButtonElement>) {
+    const parsedValue = parseInt(this.state.inputArgsGeneratorNumberString)
+    if (Number.isNaN(parsedValue) || parsedValue < 0) {
+      this.props.updateInputArgs(true, [] as Array<number>)
+      this.setState({
+        inputArgsEntryString: "<Error - Invalid Number>",
+      })
+    } else {
+      const newArr = this.generateShuffledArgs(parsedValue)
+      this.props.updateInputArgs(false, newArr)
+      this.setState({
+        inputArgsGeneratorNumberString: parsedValue.toString(),
+        inputArgsEntryString: this.inputArgsToString(newArr),
+      })
+    }
+  }
+
+  unlockRawInputArgsEntry(event: React.MouseEvent<HTMLButtonElement>) {
+    this.setState({
+      manualEntryUnlocked: !this.state.manualEntryUnlocked,
+    })
+  }
+  
+  handleInputArgManualEntryChange(event: React.FormEvent<HTMLInputElement>) {
+    this.setState({
+      inputArgsEntryString: event.currentTarget.value,
+    })
+    const [parseError, newArgs] = this.stringToInputArgs(event.currentTarget.value)
+    this.props.updateInputArgs(parseError, newArgs);
+  }
+  
+  inputArgsToString(arr: Array<number>) {
+    const new_str = arr.join(" ");
+    return new_str;
+  }
+
+  stringToInputArgs(str: string): [Boolean, number[]] {
+    const newArgs = [] as Array<number>
+    let parseError = false;
+    const seenNumbers = new Set()
+    str.split(" ").forEach((item, index) => {
+      const newVal = parseInt(item)
+      if (Number.isNaN(newVal)) {
+        parseError = true;
+      }
+      if (seenNumbers.has(newVal)) {
+        parseError = true;
+      }
+      seenNumbers.add(newVal);
+      newArgs.push(newVal);
+    })
+    if (parseError) {
+      return [true, [] as Array<number>];
+    }
+    return [parseError, newArgs];
+  }
+
+  // Fisher-yates shuffle
+  // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+  shuffle<Type>(arr: Array<Type>) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }  
+  }
+
+  // Generating range array
+  // https://stackoverflow.com/a/29559488/9160572
+  generateShuffledArgs(n: number): Array<number> {
+    const newArr = Array.from(Array(n).keys());
+    this.shuffle(newArr);
+    return (newArr);
+  }
+
+  render() {
+    return (
+      <div className="menu-input-args">
+        <h4>Data Controls</h4>
+        <label htmlFor="input-args-generator-number">
+          Number of elements:
+        </label>
+        <input
+          type="text"
+          name="input-args-generator-number"
+          value={this.state.inputArgsGeneratorNumberString}
+          onChange={this.handleInputArgsGeneratorNumberChange}
+        />
+        <button onClick={this.handleInputArgsGeneratorSubmit}>
+          Generate new stack
+        </button>
+        <br/>
+        <br/>
+        <label htmlFor="input-args-raw">
+          Raw input arguments:
+        </label>
+        <input
+          type="text"
+          name="input-args-raw"
+          value={this.state.inputArgsEntryString}
+          disabled={this.state.manualEntryUnlocked ? false : true}
+          onChange={this.handleInputArgManualEntryChange}
+        />
+        <button onClick={this.unlockRawInputArgsEntry}>
+          Lock/unlock manual entry
+        </button>
+        <br/>
+        <br/>
+        <label htmlFor="input-args-parsed">
+          Parsed input arguments:
+        </label>
+        <input
+          type="text"
+          name="input-args-parsed"
+          value={this.props.inputArgsParseError ? "<Error - invalid or duplicate>" : this.props.inputArgs.join(" ")}
+          disabled={true}
+          />
+      </div>
+
+    )
+  }
+}
+
 interface IMenuProps {
   stepForward: () => void,
   stepBackward: () => void,
-  generateStartingState: (n: number) => void,
+  // generateStartingState: (n: number) => void,
   generateStartingStateWithInputString: (s: string) => void,
   inputArgs: Array<number>,
+  inputArgsParseError: Boolean,
+  inputArgsUpdate: (parseError: Boolean, newArgs: Array<number>) => void,
   getMoves: () => void,
   programStdout: string,
   programStderr: string,
@@ -334,31 +497,45 @@ interface IMenuProps {
 }
 
 interface IMenuState {
-  inputArgsFieldLocked: boolean
+  // inputArgsFieldLocked: boolean,
 }
 
 class Menu extends React.Component<IMenuProps, IMenuState> {
   constructor(props: IMenuProps) {
     super(props)
     this.state = {
-      inputArgsFieldLocked: true,
+      // inputArgsFieldLocked: true,
     }
   }
 
-  formatArgsForDisplay(args: Array<number>) {
-    return (args.join(" "));
+  handleUpdateInputArgs(parseError: Boolean, args: Array<number>) {
+    // if (parseError) {
+    //   this.setState({
+    //     inputArgsEntryParseError: true,
+    //   })
+    // } else {
+    //   this.props.inputArgsUpdate(args);
+    // }
+    this.props.inputArgsUpdate(parseError, args);
+    return;
   }
 
-  toggleInputArgsFieldLock() {
-    this.setState({
-      inputArgsFieldLocked: !this.state.inputArgsFieldLocked
-    })
-  }
 
-  handleInputArgsFieldChange(event: React.FormEvent<HTMLInputElement>) {
-    const argString = event.currentTarget.value;
-    this.props.generateStartingStateWithInputString(argString);
-  }
+
+  // formatArgsForDisplay(args: Array<number>) {
+  //   return (args.join(" "));
+  // }
+
+  // toggleInputArgsFieldLock() {
+  //   this.setState({
+  //     inputArgsFieldLocked: !this.state.inputArgsFieldLocked
+  //   })
+  // }
+
+  // handleInputArgsFieldChange(event: React.FormEvent<HTMLInputElement>) {
+  //   const argString = event.currentTarget.value;
+  //   this.props.generateStartingStateWithInputString(argString);
+  // }
 
   formatMovesForDisplay(moves: Array<Move>) {
     return (moves.slice(1).join("\n"))
@@ -403,7 +580,12 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
         <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
         <h3>Menu</h3>
-        <h4>Data Controls</h4>
+        <MenuInputArgs
+          inputArgs={this.props.inputArgs}
+          inputArgsParseError={this.props.inputArgsParseError}
+          updateInputArgs={this.handleUpdateInputArgs.bind(this)}
+        />
+        {/* <h4>Data Controls</h4>
         <NumberForm
           generateStartingState={this.props.generateStartingState}
         />
@@ -414,7 +596,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           value={this.formatArgsForDisplay(this.props.inputArgs)}
           disabled={this.state.inputArgsFieldLocked}
           onChange={this.handleInputArgsFieldChange.bind(this)}
-        />
+        /> */}
         {/* <button
           onClick={this.toggleInputArgsFieldLock.bind(this)}
         >
@@ -517,9 +699,12 @@ interface IVisualiserState {
   moves: Array<Move>,
   current_move_num: number,
   error_parsing_moves: Boolean,
+  input_string: string,
+  input_string_parsing_error: Boolean,
   stdout: string,
   stderr: string,
   max_value: number,
+  num_values: number,
   playback_fps_slider_value: number,
   playback_fps: number,
   playback_dir: number,
@@ -534,9 +719,12 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       moves: this.props.moves,
       current_move_num: 0,
       error_parsing_moves: false,
+      input_string: "",
+      input_string_parsing_error: false,
       stdout: "",
       stderr: "",
-      max_value: this.props.values.length,
+      max_value: Math.max(...this.props.values) + 1,
+      num_values: this.props.values.length,
       playback_fps_slider_value: 23,
       playback_fps: this.calculateNewFps(23),
       playback_dir: 0,
@@ -805,22 +993,32 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
 
   // Generating range array
   // https://stackoverflow.com/a/29559488/9160572
-  generateStartingState(n: number) {
-    // console.log(n);
-    this.playbackPause();
-    const new_stack_a = Array.from(Array(n).keys());
-    this.shuffle(new_stack_a);
-    const new_stack_b: Array<number> = [];
-    const new_moves: Array<Move> = [Move.Start];
-    this.setState({
-      moves: new_moves,
-      current_move_num: 0,
-      max_value: new_stack_a.length,
-      frames: [{stack_a: new_stack_a, stack_b: new_stack_b}],
-      stdout: "",
-      stderr: "",
-    })  
-  }  
+  // generateStartingState(n: number) {
+  //   // console.log(n);
+  //   this.playbackPause();
+  //   const new_stack_a = Array.from(Array(n).keys());
+  //   this.shuffle(new_stack_a);
+  //   const new_stack_b: Array<number> = [];
+  //   const new_moves: Array<Move> = [Move.Start];
+  //   this.setState({
+  //     moves: new_moves,
+  //     current_move_num: 0,
+  //     max_value: new_stack_a.length,
+  //     frames: [{stack_a: new_stack_a, stack_b: new_stack_b}],
+  //     stdout: "",
+  //     stderr: "",
+  //   })  
+  // }  
+
+  generateShuffledArray(n: number): Array<number> {
+    const new_arr = Array.from(Array(n).keys());
+    this.shuffle(new_arr);
+    return new_arr;
+  }
+
+  // shuffledArrayToString(arr: Array<number>) {
+  //   const new_str = arr.join(" ")
+  // }
 
   generateStartingStateWithInputString(s: string) {
     this.playbackPause();
@@ -833,6 +1031,34 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       stdout: "",
       stderr: "",
     })
+  }
+
+  inputArgsUpdate(parseError: Boolean, newArr: Array<number>) {
+    this.playbackPause();
+    if (parseError) {
+      this.setState({
+        input_string_parsing_error: true,
+        moves: [Move.Start],
+        current_move_num: 0,
+        max_value: 0,
+        num_values: 0,
+        frames: [{stack_a: ([] as Array<number>), stack_b: ([] as Array<number>)}],
+        stdout: "",
+        stderr: "",
+
+      })
+    } else {
+      this.setState({
+        input_string_parsing_error: false,
+        moves: [Move.Start],
+        current_move_num: 0,
+        max_value: Math.max(...newArr) + 1,
+        num_values: newArr.length,
+        frames: [{stack_a: newArr, stack_b: ([] as Array<number>)}],
+        stdout: "",
+        stderr: "",
+      })
+    }
   }
 
   generateQueryUrl(nums: Array<number>) {
@@ -922,9 +1148,11 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         <Menu
           stepForward={this.stepForward.bind(this)}
           stepBackward={this.stepBackward.bind(this)}
-          generateStartingState={this.generateStartingState.bind(this)}
+          // generateStartingState={this.generateStartingState.bind(this)}
           generateStartingStateWithInputString={this.generateStartingStateWithInputString.bind(this)}
           inputArgs={this.state.frames[0].stack_a}
+          inputArgsParseError={this.state.input_string_parsing_error}
+          inputArgsUpdate={this.inputArgsUpdate.bind(this)}
           getMoves={this.getMoves.bind(this)}
           programStdout={this.state.stdout}
           programStderr={this.state.stderr}
@@ -945,9 +1173,17 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           jumpToMoveNumber={this.playbackJumpToFrameNumber.bind(this)}
         />
         <div className="stack-spacer"></div>
-        <Stack values={this.state.frames[this.state.current_move_num].stack_a} max_value={this.state.max_value} title="Stack A"/>
+        <Stack
+          values={this.state.frames[this.state.current_move_num].stack_a}
+          max_value={this.state.max_value}
+          num_values={this.state.num_values}
+          title="Stack A"/>
         <div className="stack-spacer"></div>
-        <Stack values={this.state.frames[this.state.current_move_num].stack_b} max_value={this.state.max_value} title="Stack B"/>
+        <Stack
+          values={this.state.frames[this.state.current_move_num].stack_b}
+          max_value={this.state.max_value}
+          num_values={this.state.num_values}
+          title="Stack B"/>
         <div className="stack-spacer"></div>
       </div>
     )
