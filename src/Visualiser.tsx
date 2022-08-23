@@ -317,8 +317,8 @@ class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
 
 interface IMenuInputArgsProps {
   inputArgs: Array<number>,
-  inputArgsParseError: Boolean,
-  updateInputArgs: (parseError: Boolean, newArr: Array<number>) => void,
+  inputArgsParseError: string,
+  updateInputArgs: (parseError: string, newArr: Array<number>) => void,
   // updateInputArgsParseError: (isError: Boolean) => void,
 }
 
@@ -354,13 +354,23 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
   handleInputArgsGeneratorSubmit(event: React.MouseEvent<HTMLButtonElement>) {
     const parsedValue = parseInt(this.state.inputArgsGeneratorNumberString)
     if (Number.isNaN(parsedValue) || parsedValue < 0) {
-      this.props.updateInputArgs(true, [] as Array<number>)
-      this.setState({
-        inputArgsEntryString: "<Error - Invalid Number>",
-      })
+      this.props.updateInputArgs("<Error: Args not generated>", [] as Array<number>)
+      if (Number.isNaN(parsedValue)) {
+        this.setState({
+          inputArgsEntryString: "<Error: Number of elements is not a number>"
+        })
+      } else if (parsedValue < 0) {
+        this.setState({
+          inputArgsEntryString: "<Error: Number of elements is negative>"
+        })
+      } else {
+        this.setState({
+          inputArgsEntryString: "<Error: Undefined error>",
+        })
+      }
     } else {
       const newArr = this.generateShuffledArgs(parsedValue)
-      this.props.updateInputArgs(false, newArr)
+      this.props.updateInputArgs("", newArr)
       this.setState({
         inputArgsGeneratorNumberString: parsedValue.toString(),
         inputArgsEntryString: this.inputArgsToString(newArr),
@@ -387,23 +397,23 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
     return new_str;
   }
 
-  stringToInputArgs(str: string): [Boolean, number[]] {
+  stringToInputArgs(str: string): [string, number[]] {
     const newArgs = [] as Array<number>
-    let parseError = false;
+    let parseError = "";
     const seenNumbers = new Set()
     str.split(" ").forEach((item, index) => {
       const newVal = parseInt(item)
       if (Number.isNaN(newVal)) {
-        parseError = true;
+        parseError = "<Error: One or more args is not a number>";
       }
       if (seenNumbers.has(newVal)) {
-        parseError = true;
+        parseError = "<Error: Duplicate numbers>";
       }
       seenNumbers.add(newVal);
       newArgs.push(newVal);
     })
     if (parseError) {
-      return [true, [] as Array<number>];
+      return [parseError, [] as Array<number>];
     }
     return [parseError, newArgs];
   }
@@ -464,9 +474,9 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
         <input
           type="text"
           name="input-args-parsed"
-          value={this.props.inputArgsParseError ? "<Error - invalid or duplicate>" : this.props.inputArgs.join(" ")}
+          value={this.props.inputArgsParseError ? this.props.inputArgsParseError : this.props.inputArgs.join(" ")}
           disabled={true}
-          />
+        />
       </div>
 
     )
@@ -478,40 +488,40 @@ interface IMenuMovesProps {
 }
 
 interface IMenuMovesState {
-
+  movesSource: string,
 }
 
 class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
   constructor(props: IMenuMovesProps) {
     super(props)
     this.state = {
-
+      movesSource: "python-linker"
     }
+
+    this.handleMovesSourceSelectChange = this.handleMovesSourceSelectChange.bind(this); 
+  }
+
+  handleMovesSourceSelectChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    this.setState({
+      movesSource: event.currentTarget.value,
+    })
   }
 
   render() {
     return (
       <div className="menu-moves">
         <h4>Moves Controls</h4>
-        <fieldset>
-          <legend>Select moves source:</legend>
-          <div>
-            <input type="radio" id="linker" name="moves-source" value="linker" defaultChecked/>
-            <label htmlFor="linker">
-              Python Linker<br/>
-              <span>link to linker</span>
-            <br/><br/>
-            </label>
-          </div>
-          <div>
-            <input type="radio" id="solution-louissxu" name="moves-source" value="solution-louissxu"/>
-            <label htmlFor="solution-louissxu">
-              Solution - @louissxu<br/>
-              <span>link to github</span>
-            <br/>
-            </label>
-          </div>
-        </fieldset>
+        <label htmlFor="moves-source">Select Moves Source</label>
+        <select
+          id="moves-source"
+          name="moves-source"
+          value={this.state.movesSource}
+          onChange={this.handleMovesSourceSelectChange}
+        >
+
+          <option value="python-linker">Python Linker</option>
+          <option value="solution-louissxu">Solution - @louissxu</option>
+        </select>
       </div>
     )
   }
@@ -523,8 +533,8 @@ interface IMenuProps {
   // generateStartingState: (n: number) => void,
   generateStartingStateWithInputString: (s: string) => void,
   inputArgs: Array<number>,
-  inputArgsParseError: Boolean,
-  inputArgsUpdate: (parseError: Boolean, newArgs: Array<number>) => void,
+  inputArgsParseError: string,
+  inputArgsUpdate: (parseError: string, newArgs: Array<number>) => void,
   getMoves: () => void,
   programStdout: string,
   programStderr: string,
@@ -552,7 +562,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
     }
   }
 
-  handleUpdateInputArgs(parseError: Boolean, args: Array<number>) {
+  handleUpdateInputArgs(parseError: string, args: Array<number>) {
     // if (parseError) {
     //   this.setState({
     //     inputArgsEntryParseError: true,
@@ -745,7 +755,7 @@ interface IVisualiserState {
   current_move_num: number,
   error_parsing_moves: Boolean,
   input_string: string,
-  input_string_parsing_error: Boolean,
+  input_string_parsing_error: string,
   stdout: string,
   stderr: string,
   max_value: number,
@@ -765,7 +775,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       current_move_num: 0,
       error_parsing_moves: false,
       input_string: "",
-      input_string_parsing_error: false,
+      input_string_parsing_error: "",
       stdout: "",
       stderr: "",
       max_value: Math.max(...this.props.values) + 1,
@@ -1078,11 +1088,11 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     })
   }
 
-  inputArgsUpdate(parseError: Boolean, newArr: Array<number>) {
+  inputArgsUpdate(parseError: string, newArr: Array<number>) {
     this.playbackPause();
     if (parseError) {
       this.setState({
-        input_string_parsing_error: true,
+        input_string_parsing_error: parseError,
         moves: [Move.Start],
         current_move_num: 0,
         max_value: 0,
@@ -1094,7 +1104,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       })
     } else {
       this.setState({
-        input_string_parsing_error: false,
+        input_string_parsing_error: "",
         moves: [Move.Start],
         current_move_num: 0,
         max_value: Math.max(...newArr) + 1,
