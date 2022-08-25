@@ -503,6 +503,8 @@ class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePython
     }
   }
 
+  // TODO: Make python linker take raw text and check that the linker gives appropriate error responses for invalid input arguments
+
   generateQueryUrl(nums: Array<number>) {
     const url = "http://127.0.0.1:8080?" + nums.join(",");
     return url;
