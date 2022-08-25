@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 import "./Visualiser.css";
 
 import { VariableSizeList as List} from "react-window";
+import { isParenthesizedExpression } from 'typescript';
 
 interface IBarProps {
   value: number,
@@ -483,19 +484,247 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
   }
 }
 
-interface IMenuMovesProps {
+interface IMenuMovesSourcePythonLinkerProps {
+  inputArgs: Array<number>,
+  updateMoves: (parseError: string, moves: Array<Move>) => void,
+}
 
+interface IMenuMovesSourcePythonLinkerState {
+  stdout: string,
+  stderr: string,
+}
+
+class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePythonLinkerProps, IMenuMovesSourcePythonLinkerState> {
+  constructor(props: IMenuMovesSourcePythonLinkerProps) {
+    super(props)
+    this.state = {
+      stdout: "",
+      stderr: "",
+    }
+  }
+
+  generateQueryUrl(nums: Array<number>) {
+    const url = "http://127.0.0.1:8080?" + nums.join(",");
+    return url;
+  }
+
+  stringToMove(str: string): Move | null {
+    switch(str){
+      case "sa":
+        return Move.Sa;
+      case "sb":
+        return Move.Sb;
+      case "ss":
+        return Move.Ss;
+      case "pa":
+        return Move.Pa;
+      case "pb":
+        return Move.Pb;
+      case "ra":
+        return Move.Ra;
+      case "rb":
+        return Move.Rb;
+      case "rr":
+        return Move.Rr;
+      case "rra":
+        return Move.Rra;
+      case "rrb":
+        return Move.Rrb;
+      case "rrr":
+        return Move.Rrr;
+    }    
+    return null;
+  }
+
+  getMoves() {
+    const url = this.generateQueryUrl(this.props.inputArgs);
+    fetch(url).then((response) => {
+      return response.text();
+    }).then((text) => {
+      const data = JSON.parse(text);
+      const stdout: string = data.stdout
+      const stderr: string = data.stderr;
+      const moves = stdout.trim().split("\n").map((elem: string) => this.stringToMove(elem));
+      let parseError = "";
+      const moves_without_null = moves.reduce((res, item) => {
+        if (item === null) {
+          parseError = "<Error: Invalid output from program received>";
+          return res;
+        } else {
+          return ([...res, item]);
+        }
+      }, [] as Array<Move>);
+      if (parseError) {
+        this.setState({
+          stdout: stdout,
+          stderr: stderr,
+        })
+        return ([parseError, [] as Array<Move>]);
+      } else {
+        const moves_with_start: Array<Move> = [Move.Start, ...moves_without_null];
+        this.setState({
+          // moves: moves_with_start,
+          stdout: stdout,
+          stderr: stderr,
+        })
+        return [parseError, moves_with_start];
+      }  
+    }).catch(() => {
+      console.log("Error running linker (timeout? other error?)");
+    });
+  }  
+
+  render() {
+    return (
+      <div>
+        <div className="menu-moves-sources-description-text">
+          <b>Python linker</b><br/>
+          Get moves from running a user provided C program.<br/><br/>
+          Python program sets up HTTP server which runs temporary API to allow access to C program from this SPA.<br/><br/>
+          More info: INSERT LINK<br/>
+          Source: INSERT LINK<br/>
+        </div>
+
+        <button
+          onClick={this.getMoves.bind(this)}
+        >
+          Get Moves
+        </button><br/>
+
+        <label htmlFor="stdout">stdout</label><br/>
+        <textarea
+          id="stdout"
+          value={this.state.stdout}
+          disabled={true}
+        /><br/>
+        <label htmlFor="stderr">stderr</label><br/>
+        <textarea
+          id="stderr"
+          value={this.state.stderr}
+          disabled={true}
+        /><br/>
+      </div>
+    )
+  }
+}
+
+interface IMenuMovesSourceManualProps {
+  moves: Array<Move>,
+  // movesParseError: string,
+  updateMoves: (parseError: string, moves: Array<Move>) => void,
+}
+
+interface IMenuMovesSourceManualState {
+  inputString: string,
+}
+
+class MenuMovesSourceManual extends React.Component<IMenuMovesSourceManualProps, IMenuMovesSourceManualState> {
+  constructor(props: IMenuMovesSourceManualProps) {
+    super(props)
+    this.state = {
+      inputString: this.props.moves.join("\n"),
+      // inputString: "",
+    }
+  }
+
+  stringToMove(s: string): Move | null {
+    if (s === "starting state") {
+      return Move.Start;
+    } else if (s === "sa") {
+      return Move.Sa;
+    } else if (s === "sb") {
+      return Move.Sb;
+    } else if (s === "ss") {
+      return Move.Ss;
+    } else if (s === "pa") {
+      return Move.Pa;
+    } else if (s === "pb") {
+      return Move.Pb;
+    } else if (s === "ra") {
+      return Move.Ra;
+    } else if (s === "rb") {
+      return Move.Rb;
+    } else if (s === "rr") {
+      return Move.Rr;
+    } else if (s === "rra") {
+      return Move.Rra;
+    } else if (s === "rrb") {
+      return Move.Rrb;
+    } else if (s === "rrr") {
+      return Move.Rrr;
+    } else {
+      return null;
+    }
+  }
+
+  stringToMoves(s: string): [string, Array<Move>] {
+    let parseError = ""
+    const newMoves = s.trim().split("\n").reduce((newMoves, item, index) => {
+      if (item === "") {
+        parseError = "<Error: Empty move in string>"
+        return ([...newMoves])
+      }
+      const parsedMove = this.stringToMove(item);
+      if (parsedMove === null) {
+        parseError = "<Error: Invalid move in string>"
+        return ([...newMoves])
+      }
+      return ([...newMoves, parsedMove])
+    }, [] as Array<Move>)
+    return [parseError, newMoves]
+  }
+
+  handleMovesInputFieldChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    this.setState({
+      inputString: event.currentTarget.value,
+    })
+    const [parseError, newMoves] = this.stringToMoves(event.currentTarget.value);
+    this.props.updateMoves(parseError, newMoves);
+  }
+
+  render() {
+    return (
+      <div>
+        <div className="menu-moves-sources-description-text">
+          <b>Manual Entry</b><br/>
+          Enter moves manually into box below. Moves separated by new line char.<br/><br/>
+          Updates live as entry field is changed.<br/><br/>
+          More info: INSERT LINK<br/>
+          Source: INSERT LINK<br/>
+        </div>
+        
+
+        <label htmlFor="movesManualEntryInputField">Moves entry:</label><br/>
+        <textarea
+          id="movesInput"
+          value={this.state.inputString}
+          onChange={this.handleMovesInputFieldChange.bind(this)}
+        />
+      </div>
+    )
+  }
+}
+
+interface IMenuMovesProps {
+  inputArgs: Array<number>,
+  moves: Array<Move>,
+  movesParseError: string,
+  movesUpdate: (parseError: string, newMoves: Array<Move>) => void,
 }
 
 interface IMenuMovesState {
   movesSource: string,
+  stdout: string,
+  stderr: string,
 }
 
 class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
   constructor(props: IMenuMovesProps) {
     super(props)
     this.state = {
-      movesSource: "python-linker"
+      movesSource: "python-linker",
+      stdout: "",
+      stderr: "",
     }
 
     this.handleMovesSourceSelectChange = this.handleMovesSourceSelectChange.bind(this); 
@@ -508,6 +737,21 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
   }
 
   render() {
+    let movesGenerator: JSX.Element = <div></div>
+    if (this.state.movesSource === "manual-entry") {
+      movesGenerator = 
+        <MenuMovesSourceManual
+          moves={this.props.moves}
+          updateMoves={this.props.movesUpdate}
+        />
+    } else if (this.state.movesSource === "python-linker") {
+      movesGenerator = 
+        <MenuMovesSourcePythonLinker
+          inputArgs={this.props.inputArgs}
+          updateMoves={this.props.movesUpdate}
+        />
+    }
+    
     return (
       <div className="menu-moves">
         <h4>Moves Controls</h4>
@@ -520,8 +764,22 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
         >
 
           <option value="python-linker">Python Linker</option>
+          <option value="manual-entry">Manual Entry</option>
           <option value="solution-louissxu">Solution - @louissxu</option>
         </select>
+
+        <br/>
+        {movesGenerator}
+        <br/>
+
+        <label htmlFor="parsed-moves">Parsed moves</label><br/>
+        <textarea
+          id="parsed-moves"
+          // type="text"
+          value={this.props.movesParseError ? this.props.movesParseError : this.props.moves.join("\n")}
+          disabled={true}
+        /><br/>
+
       </div>
     )
   }
@@ -535,7 +793,12 @@ interface IMenuProps {
   inputArgs: Array<number>,
   inputArgsParseError: string,
   inputArgsUpdate: (parseError: string, newArgs: Array<number>) => void,
-  getMoves: () => void,
+
+  moves: Array<Move>,
+  movesParseError: string,
+  movesUpdate: (parseError: string, newMoves: Array<Move>) => void,
+
+  // getMoves: () => void,
   programStdout: string,
   programStderr: string,
   programParsedMoves: Array<Move>,
@@ -603,9 +866,9 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
     this.props.stepBackward();
   }
 
-  handleGetMoves() {
-    this.props.getMoves();
-  }
+  // handleGetMoves() {
+  //   this.props.getMoves();
+  // }
 
   handlePlaybackPause() {
     this.props.playbackPause();
@@ -656,14 +919,20 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
         >
           Lock/Unlock editing
         </button> */}
-        <MenuMoves/>
-        <h4>Moves Controls</h4>
-        <button
+        <MenuMoves
+          // moves={this.props.programParsedMoves}
+          inputArgs={this.props.inputArgs}
+          moves={this.props.moves}
+          movesParseError={this.props.movesParseError}
+          movesUpdate={this.props.movesUpdate}
+        />
+        {/* <h4>Moves Controls</h4> */}
+        {/* <button
           onClick={this.handleGetMoves.bind(this)}
         >
           Get Moves
-        </button><br/>
-        <label htmlFor="stdout">stdout</label><br/>
+        </button><br/> */}
+        {/* <label htmlFor="stdout">stdout</label><br/>
         <textarea
           id="stdout"
           // type="text"
@@ -676,14 +945,14 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           // type="text"
           value={this.props.programStderr}
           disabled={true}
-        /><br/>
-        <label htmlFor="movesInput">Parsed Moves</label><br/>
+        /><br/> */}
+        {/* <label htmlFor="movesInput">Parsed Moves</label><br/>
         <textarea
           id="movesInput"
           // type="text"
           value={this.formatMovesForDisplay(this.props.programParsedMoves)}
           disabled={true}
-        /><br/>
+        /><br/> */}
         <h4>Playback Controls</h4>
         <button
           onClick={this.handleStepBackward.bind(this)}
@@ -752,8 +1021,9 @@ interface IVisualiserProps {
 
 interface IVisualiserState {
   moves: Array<Move>,
+  moves_parsing_error: string,
   current_move_num: number,
-  error_parsing_moves: Boolean,
+  // error_parsing_moves: Boolean,
   input_string: string,
   input_string_parsing_error: string,
   stdout: string,
@@ -772,8 +1042,9 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     super(props);
     this.state = {
       moves: this.props.moves,
+      moves_parsing_error: "",
       current_move_num: 0,
-      error_parsing_moves: false,
+      // error_parsing_moves: false,
       input_string: "",
       input_string_parsing_error: "",
       stdout: "",
@@ -1116,75 +1387,75 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     }
   }
 
-  generateQueryUrl(nums: Array<number>) {
-    const url = "http://127.0.0.1:8080?" + nums.join(",");
-    return url;
-  }  
+  // generateQueryUrl(nums: Array<number>) {
+  //   const url = "http://127.0.0.1:8080?" + nums.join(",");
+  //   return url;
+  // }  
 
-  stringToMove(str: string): Move | null {
-    switch(str){
-      case "sa":
-        return Move.Sa;
-      case "sb":
-        return Move.Sb;
-      case "ss":
-        return Move.Ss;
-      case "pa":
-        return Move.Pa;
-      case "pb":
-        return Move.Pb;
-      case "ra":
-        return Move.Ra;
-      case "rb":
-        return Move.Rb;
-      case "rr":
-        return Move.Rr;
-      case "rra":
-        return Move.Rra;
-      case "rrb":
-        return Move.Rrb;
-      case "rrr":
-        return Move.Rrr;
-    }    
-    return null;
-  }  
+  // stringToMove(str: string): Move | null {
+  //   switch(str){
+  //     case "sa":
+  //       return Move.Sa;
+  //     case "sb":
+  //       return Move.Sb;
+  //     case "ss":
+  //       return Move.Ss;
+  //     case "pa":
+  //       return Move.Pa;
+  //     case "pb":
+  //       return Move.Pb;
+  //     case "ra":
+  //       return Move.Ra;
+  //     case "rb":
+  //       return Move.Rb;
+  //     case "rr":
+  //       return Move.Rr;
+  //     case "rra":
+  //       return Move.Rra;
+  //     case "rrb":
+  //       return Move.Rrb;
+  //     case "rrr":
+  //       return Move.Rrr;
+  //   }    
+  //   return null;
+  // }  
 
-  getMoves() {
-    this.playbackPause();
-    const url = this.generateQueryUrl(this.state.frames[0].stack_a);
-    this.setState({
-      current_move_num: 0,
-      frames: this.state.frames.slice(0, 1),
-    })  
-    fetch(url).then((response) => {
-      return response.text();
-    }).then((text) => {
-      const data = JSON.parse(text);
-      const stdout = data.stdout
-      const stderr = data.stderr;
-      const moves = stdout.trim().split("\n").map((elem: string) => this.stringToMove(elem));
-      // const formattedMoves = moves.map((str:string) => str[0].toUpperCase() + str.slice(1)).map((str:string) => "Move." + str).join(", ");
-      // console.log(formattedMoves); 
-      if (moves.includes(null)) {
-        this.setState({
-          moves: [],
-          error_parsing_moves: true,
-          stdout: stdout,
-          stderr: stderr,
-        })  
-      } else {
-        const moves_with_start = [Move.Start, ...moves];
-        this.setState({
-          moves: moves_with_start,
-          error_parsing_moves: false,
-          stdout: stdout,
-          stderr: stderr,
-        })  
-      }  
-    }).catch(() => {
-      console.log("boo");
-    });
-  }  
+  // getMoves() {
+  //   this.playbackPause();
+  //   const url = this.generateQueryUrl(this.state.frames[0].stack_a);
+  //   this.setState({
+  //     current_move_num: 0,
+  //     frames: this.state.frames.slice(0, 1),
+  //   })  
+  //   fetch(url).then((response) => {
+  //     return response.text();
+  //   }).then((text) => {
+  //     const data = JSON.parse(text);
+  //     const stdout = data.stdout
+  //     const stderr = data.stderr;
+  //     const moves = stdout.trim().split("\n").map((elem: string) => this.stringToMove(elem));
+  //     // const formattedMoves = moves.map((str:string) => str[0].toUpperCase() + str.slice(1)).map((str:string) => "Move." + str).join(", ");
+  //     // console.log(formattedMoves); 
+  //     if (moves.includes(null)) {
+  //       this.setState({
+  //         moves: [],
+  //         // error_parsing_moves: true,
+  //         stdout: stdout,
+  //         stderr: stderr,
+  //       })  
+  //     } else {
+  //       const moves_with_start = [Move.Start, ...moves];
+  //       this.setState({
+  //         moves: moves_with_start,
+  //         // error_parsing_moves: false,
+  //         stdout: stdout,
+  //         stderr: stderr,
+  //       })  
+  //     }  
+  //   }).catch(() => {
+  //     console.log("boo");
+  //   });
+  // }  
 
   calculateNewFps(exp: number) {
     return 0.25 * (1.15 ** exp);
@@ -1197,6 +1468,21 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
     })  
   }  
 
+  movesUpdate(parseError: string, newMoves: Array<Move>) {
+    if (parseError) {
+      this.setState({
+        moves_parsing_error: parseError,
+        moves: [] as Array<Move>,
+      })
+    } else {
+      this.setState({
+        moves_parsing_error: "",
+        moves: newMoves,
+      })
+    }
+
+  }
+
   render() {
     return (
       <div className="visualiser">
@@ -1208,7 +1494,12 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           inputArgs={this.state.frames[0].stack_a}
           inputArgsParseError={this.state.input_string_parsing_error}
           inputArgsUpdate={this.inputArgsUpdate.bind(this)}
-          getMoves={this.getMoves.bind(this)}
+
+          moves={this.state.moves}
+          movesParseError={this.state.moves_parsing_error}
+          movesUpdate={this.movesUpdate.bind(this)}
+
+          // getMoves={this.getMoves.bind(this)}
           programStdout={this.state.stdout}
           programStderr={this.state.stderr}
           programParsedMoves={this.state.moves}

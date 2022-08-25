@@ -20,6 +20,13 @@ input[type="range"] {
   width: 100%;
 }
 
+.menu-moves-sources-description-text {
+  background-color: #b6bdc5;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
 .moves-container {
   background-color: #b6bdc5;
   padding: 0px 20px 0px 20px;
