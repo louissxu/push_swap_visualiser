@@ -904,23 +904,6 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           inputArgsParseError={this.props.inputArgsParseError}
           updateInputArgs={this.handleUpdateInputArgs.bind(this)}
         />
-        {/* <h4>Data Controls</h4>
-        <NumberForm
-          generateStartingState={this.props.generateStartingState}
-        />
-        <label htmlFor="input_args">Input Args</label>
-        <input
-          id="input_args"
-          type="text"
-          value={this.formatArgsForDisplay(this.props.inputArgs)}
-          disabled={this.state.inputArgsFieldLocked}
-          onChange={this.handleInputArgsFieldChange.bind(this)}
-        /> */}
-        {/* <button
-          onClick={this.toggleInputArgsFieldLock.bind(this)}
-        >
-          Lock/Unlock editing
-        </button> */}
         <MenuMoves
           // moves={this.props.programParsedMoves}
           inputArgs={this.props.inputArgs}
@@ -928,33 +911,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           movesParseError={this.props.movesParseError}
           movesUpdate={this.props.movesUpdate}
         />
-        {/* <h4>Moves Controls</h4> */}
-        {/* <button
-          onClick={this.handleGetMoves.bind(this)}
-        >
-          Get Moves
-        </button><br/> */}
-        {/* <label htmlFor="stdout">stdout</label><br/>
-        <textarea
-          id="stdout"
-          // type="text"
-          value={this.props.programStdout}
-          disabled={true}
-        /><br/>
-        <label htmlFor="stderr">stderr</label><br/>
-        <textarea
-          id="stderr"
-          // type="text"
-          value={this.props.programStderr}
-          disabled={true}
-        /><br/> */}
-        {/* <label htmlFor="movesInput">Parsed Moves</label><br/>
-        <textarea
-          id="movesInput"
-          // type="text"
-          value={this.formatMovesForDisplay(this.props.programParsedMoves)}
-          disabled={true}
-        /><br/> */}
+
         <h4>Playback Controls</h4>
         <button
           onClick={this.handleStepBackward.bind(this)}
