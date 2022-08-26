@@ -316,6 +316,130 @@ class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
   }
 }
 
+interface IMenuInputArgsManualProps {
+  updateInputArgs: (parseError: string, newArr: Array<number>) => void,
+}
+
+interface IMenuInputArgsManualState {
+  inputArgsString: string,
+}
+
+class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMenuInputArgsManualState> {
+  constructor(props: IMenuInputArgsManualProps) {
+    super(props)
+    this.state = {
+      inputArgsString: ""
+    }
+  }
+
+  handleInputArgsManualEntryChange(event: React.FormEvent<HTMLInputElement>) {
+    this.setState({
+      inputArgsString: event.currentTarget.value,
+    })
+  }
+
+  render() {
+    return (
+      <div>
+          <div className="menu-input-args-sources-description-text">
+          <b>Input Args Manual Entry</b><br/>
+          Enter input args manually into box below. Moves separated by a space or tab char.<br/><br/>
+          Updates live as entry field is changed.<br/><br/>
+          More info: INSERT LINK<br/>
+          Source: INSERT LINK<br/>
+        </div>
+
+        <label htmlFor="input-args-string-input-field">
+          Input Args Entry
+        </label>
+        <input
+          type="text"
+          name="input-args-string-input-field"
+          value={this.state.inputArgsString}
+          onChange={this.handleInputArgsManualEntryChange.bind(this)}
+        />
+      </div>
+
+    )
+  }
+}
+
+interface IMenuInputArgsRandomGeneratorProps {
+  updateInputArgs: (parseError: string, newArr: Array<number>) => void,
+}
+
+interface IMenuInputArgsRandomGeneratorState {
+  numberOfElementsString: string,
+}
+
+class MenuInputArgsRandomGenerator extends React.Component<IMenuInputArgsRandomGeneratorProps, IMenuInputArgsRandomGeneratorState> {
+  constructor(props: IMenuInputArgsRandomGeneratorProps) {
+    super(props)
+    this.state = {
+      numberOfElementsString: ""
+    }
+  }
+
+  // Fisher-yates shuffle
+  // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+  shuffle<Type>(arr: Array<Type>) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }  
+  }
+
+  // Generating range array
+  // https://stackoverflow.com/a/29559488/9160572
+  generateShuffledArgs(n: number): Array<number> {
+    const newArr = Array.from(Array(n).keys());
+    this.shuffle(newArr);
+    return (newArr);
+  }
+
+  handleNumberOfElementsStringChange(event: React.FormEvent<HTMLInputElement>) {
+    // console.log(event.currentTarget.value);
+    this.setState({
+      numberOfElementsString: event.currentTarget.value,
+    })
+  }
+
+  handleNumberOfElementsSubmit(event: React.MouseEvent<HTMLButtonElement>) {
+    const parsedValue = parseInt(this.state.numberOfElementsString)
+    if (Number.isNaN(parsedValue)) {
+      this.props.updateInputArgs("<Error: n is not a number>", [] as Array<number>)
+    } else if (parsedValue < 0) {
+      this.props.updateInputArgs("<Error: n is negative>", [] as Array<number>)
+    } else {
+      const newArr = this.generateShuffledArgs(parsedValue)
+      this.props.updateInputArgs("", newArr)
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <div className="menu-input-args-sources-description-text">
+          <b>Random Generator</b><br/>
+          Generates a shuffled list of n numbers: [0, n)
+        </div>
+
+        <label htmlFor="number-of-elements-input-field">n: Number of elements</label>
+        <input
+          type="text"
+          name="number-of-elements-input-field"
+          value={this.state.numberOfElementsString}
+          onChange={this.handleNumberOfElementsStringChange.bind(this)}
+        />
+
+        <button onClick={this.handleNumberOfElementsSubmit.bind(this)}>
+          Generate new stack
+        </button>
+      </div>
+    )
+  }
+}
+
 interface IMenuInputArgsProps {
   inputArgs: Array<number>,
   inputArgsParseError: string,
@@ -328,6 +452,8 @@ interface IMenuInputArgsState {
   inputArgsEntryString: string,
   // inputArgsEntryStringParseError: Boolean
   manualEntryUnlocked: Boolean,
+
+  inputArgsSource: string,
 }
 
 class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsState> {
@@ -338,46 +464,48 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
       inputArgsEntryString: this.inputArgsToString(this.props.inputArgs),
       // // inputArgsEntryStringParseError: false,
       manualEntryUnlocked: false,
+
+      inputArgsSource: "random-generator",
     }
 
-    this.handleInputArgsGeneratorNumberChange = this.handleInputArgsGeneratorNumberChange.bind(this);
-    this.handleInputArgsGeneratorSubmit = this.handleInputArgsGeneratorSubmit.bind(this);
+    // this.handleInputArgsGeneratorNumberChange = this.handleInputArgsGeneratorNumberChange.bind(this);
+    // this.handleInputArgsGeneratorSubmit = this.handleInputArgsGeneratorSubmit.bind(this);
     this.unlockRawInputArgsEntry = this.unlockRawInputArgsEntry.bind(this);
     this.handleInputArgManualEntryChange = this.handleInputArgManualEntryChange.bind(this);
   }
 
-  handleInputArgsGeneratorNumberChange(event: React.FormEvent<HTMLInputElement>) {
-    this.setState({
-      inputArgsGeneratorNumberString: event.currentTarget.value,
-    })
-  }
+  // handleInputArgsGeneratorNumberChange(event: React.FormEvent<HTMLInputElement>) {
+  //   this.setState({
+  //     inputArgsGeneratorNumberString: event.currentTarget.value,
+  //   })
+  // }
 
-  handleInputArgsGeneratorSubmit(event: React.MouseEvent<HTMLButtonElement>) {
-    const parsedValue = parseInt(this.state.inputArgsGeneratorNumberString)
-    if (Number.isNaN(parsedValue) || parsedValue < 0) {
-      this.props.updateInputArgs("<Error: Args not generated>", [] as Array<number>)
-      if (Number.isNaN(parsedValue)) {
-        this.setState({
-          inputArgsEntryString: "<Error: Number of elements is not a number>"
-        })
-      } else if (parsedValue < 0) {
-        this.setState({
-          inputArgsEntryString: "<Error: Number of elements is negative>"
-        })
-      } else {
-        this.setState({
-          inputArgsEntryString: "<Error: Undefined error>",
-        })
-      }
-    } else {
-      const newArr = this.generateShuffledArgs(parsedValue)
-      this.props.updateInputArgs("", newArr)
-      this.setState({
-        inputArgsGeneratorNumberString: parsedValue.toString(),
-        inputArgsEntryString: this.inputArgsToString(newArr),
-      })
-    }
-  }
+  // handleInputArgsGeneratorSubmit(event: React.MouseEvent<HTMLButtonElement>) {
+  //   const parsedValue = parseInt(this.state.inputArgsGeneratorNumberString)
+  //   if (Number.isNaN(parsedValue) || parsedValue < 0) {
+  //     this.props.updateInputArgs("<Error: Args not generated>", [] as Array<number>)
+  //     if (Number.isNaN(parsedValue)) {
+  //       this.setState({
+  //         inputArgsEntryString: "<Error: Number of elements is not a number>"
+  //       })
+  //     } else if (parsedValue < 0) {
+  //       this.setState({
+  //         inputArgsEntryString: "<Error: Number of elements is negative>"
+  //       })
+  //     } else {
+  //       this.setState({
+  //         inputArgsEntryString: "<Error: Undefined error>",
+  //       })
+  //     }
+  //   } else {
+  //     const newArr = this.generateShuffledArgs(parsedValue)
+  //     this.props.updateInputArgs("", newArr)
+  //     this.setState({
+  //       inputArgsGeneratorNumberString: parsedValue.toString(),
+  //       inputArgsEntryString: this.inputArgsToString(newArr),
+  //     })
+  //   }
+  // }
 
   unlockRawInputArgsEntry(event: React.MouseEvent<HTMLButtonElement>) {
     this.setState({
@@ -419,28 +547,62 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
     return [parseError, newArgs];
   }
 
-  // Fisher-yates shuffle
-  // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
-  shuffle<Type>(arr: Array<Type>) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }  
-  }
+  // // Fisher-yates shuffle
+  // // Ref: https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+  // shuffle<Type>(arr: Array<Type>) {
+  //   for (let i = arr.length - 1; i > 0; i--) {
+  //     const j = Math.floor(Math.random() * (i + 1));
+  //     [arr[i], arr[j]] = [arr[j], arr[i]];
+  //   }  
+  // }
 
-  // Generating range array
-  // https://stackoverflow.com/a/29559488/9160572
-  generateShuffledArgs(n: number): Array<number> {
-    const newArr = Array.from(Array(n).keys());
-    this.shuffle(newArr);
-    return (newArr);
+  // // Generating range array
+  // // https://stackoverflow.com/a/29559488/9160572
+  // generateShuffledArgs(n: number): Array<number> {
+  //   const newArr = Array.from(Array(n).keys());
+  //   this.shuffle(newArr);
+  //   return (newArr);
+  // }
+
+  handleInputArgsSourceChange(event: React.ChangeEvent<HTMLSelectElement>) {
+    this.setState({
+      inputArgsSource: event.currentTarget.value,
+    })
   }
 
   render() {
+    let inputArgsSource = <div></div>
+    if (this.state.inputArgsSource === "random-generator") {
+      inputArgsSource = 
+        <MenuInputArgsRandomGenerator
+          updateInputArgs={this.props.updateInputArgs}
+        />
+    } else if (this.state.inputArgsSource === "manual-entry") {
+      inputArgsSource =
+        <MenuInputArgsManual
+          updateInputArgs={this.props.updateInputArgs}
+        />
+    }
+
     return (
       <div className="menu-input-args">
         <h4>Data Controls</h4>
-        <label htmlFor="input-args-generator-number">
+        <label htmlFor="input-args-source">Select Input Arguments Source</label>
+        <select
+          id="input-args-source"
+          name="input-args-source"
+          value={this.state.inputArgsSource}
+          onChange={this.handleInputArgsSourceChange.bind(this)}
+        >
+          <option value="random-generator">Random Generator</option>
+          <option value="manual-entry">Manual Entry</option>
+          {/* <option value="adversarial-nearly-sorted">Adversarial: Nearly Sorted</option>  */}
+          {/* <option value="adversarial-reversed">Adversarial: Reversed</option> */}
+        </select>
+
+        {inputArgsSource}
+
+        {/* <label htmlFor="input-args-generator-number">
           Number of elements:
         </label>
         <input
@@ -451,8 +613,8 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
         />
         <button onClick={this.handleInputArgsGeneratorSubmit}>
           Generate new stack
-        </button>
-        <br/>
+        </button> */}
+        {/* <br/>
         <br/>
         <label htmlFor="input-args-raw">
           Raw input arguments:
@@ -463,10 +625,10 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
           value={this.state.inputArgsEntryString}
           disabled={this.state.manualEntryUnlocked ? false : true}
           onChange={this.handleInputArgManualEntryChange}
-        />
-        <button onClick={this.unlockRawInputArgsEntry}>
+        /> */}
+        {/* <button onClick={this.unlockRawInputArgsEntry}>
           Lock/unlock manual entry
-        </button>
+        </button> */}
         <br/>
         <br/>
         <label htmlFor="input-args-parsed">
@@ -696,9 +858,9 @@ class MenuMovesSourceManual extends React.Component<IMenuMovesSourceManualProps,
         </div>
         
 
-        <label htmlFor="movesManualEntryInputField">Moves entry:</label><br/>
+        <label htmlFor="moves-manual-entry-input-field">Moves entry</label><br/>
         <textarea
-          id="movesInput"
+          id="moves-manual-entry-input-field"
           value={this.state.inputString}
           onChange={this.handleMovesInputFieldChange.bind(this)}
         />

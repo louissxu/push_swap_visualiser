@@ -20,6 +20,13 @@ input[type="range"] {
   width: 100%;
 }
 
+.menu-input-args-sources-description-text {
+  background-color: #b6bdc5;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
 .menu-moves-sources-description-text {
   background-color: #b6bdc5;
   margin-top: 10px;
