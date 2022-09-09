@@ -336,6 +336,36 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
     this.setState({
       inputArgsString: event.currentTarget.value,
     })
+
+    const splitString = event.currentTarget.value.split(" ");
+    const seenNumbers = new Set();
+    const newArgs = [] as Array<number>;
+    let NaNSeen = false;
+    let duplicateSeen = false;
+    splitString.forEach((item) => {
+      const newVal = parseInt(item)
+      if (Number.isNaN(newVal)) {
+        NaNSeen = true;
+      }
+      if (seenNumbers.has(newVal)) {
+        duplicateSeen = true;
+      }
+      seenNumbers.add(newVal);
+      newArgs.push(newVal);
+    })
+    let parseError = "";
+    if (NaNSeen && duplicateSeen) {
+      parseError = "<Error: NaN and duplicate found>";
+    } else if (NaNSeen) {
+      parseError = "<Error: NaN found>";
+    } else if (duplicateSeen) {
+      parseError = "<Error: Duplicate found>";
+    }
+    if (parseError) {
+      this.props.updateInputArgs(parseError, [] as Array<number>);
+    } else {
+      this.props.updateInputArgs(parseError, newArgs);
+    }
   }
 
   render() {
