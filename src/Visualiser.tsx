@@ -337,29 +337,44 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
       inputArgsString: event.currentTarget.value,
     })
 
+    const setToErrorString = (set: Set<string>): string => {
+      if (set.size === 0) {
+        return "";
+      }
+      const errorsString = Array.from(set).reduce((prev, curr, index, array) => {
+        if (index === 0) {
+          return curr;
+        }
+        if (index === array.length - 1) {
+          return (`${prev} and ${curr}`);
+        }
+        return (`${prev}, ${curr}`);
+      }, "")
+
+      return (`<Error: ${errorsString} found>`);
+    }
+
     const splitString = event.currentTarget.value.split(" ");
     const seenNumbers = new Set();
     const newArgs = [] as Array<number>;
-    let NaNSeen = false;
-    let duplicateSeen = false;
+    const errorsSeen = new Set() as Set<string>;
     splitString.forEach((item) => {
       const newVal = parseInt(item)
       if (Number.isNaN(newVal)) {
-        NaNSeen = true;
+        errorsSeen.add("NaN");
       }
       if (seenNumbers.has(newVal)) {
-        duplicateSeen = true;
+        errorsSeen.add("duplicate");
+      }
+      if (newVal < 0) {
+        errorsSeen.add("negative");
       }
       seenNumbers.add(newVal);
       newArgs.push(newVal);
     })
     let parseError = "";
-    if (NaNSeen && duplicateSeen) {
-      parseError = "<Error: NaN and duplicate found>";
-    } else if (NaNSeen) {
-      parseError = "<Error: NaN found>";
-    } else if (duplicateSeen) {
-      parseError = "<Error: Duplicate found>";
+    if (errorsSeen.size > 0) {
+      parseError = setToErrorString(errorsSeen);
     }
     if (parseError) {
       this.props.updateInputArgs(parseError, [] as Array<number>);
