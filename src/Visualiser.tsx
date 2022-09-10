@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 import "./Visualiser.css";
 
 import { VariableSizeList as List} from "react-window";
-import { isParenthesizedExpression } from 'typescript';
-import { constants } from 'os';
 
 interface IBarProps {
   value: number,
@@ -317,6 +315,67 @@ class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
   }
 }
 
+interface IMenuInputArgsReversedProps {
+  updateInputArgs: (parseError: string, newARr: Array<number>) => void,
+}
+
+interface IMenuInputArgsReversedState {
+  numberOfElementsString: string,
+}
+
+class MenuInputArgsReversed extends React.Component<IMenuInputArgsReversedProps, IMenuInputArgsReversedState> {
+  constructor(props: IMenuInputArgsReversedProps) {
+    super(props);
+    this.state = {
+      numberOfElementsString: "50"
+    }
+  }
+
+  handleNumberOfElementsStringChange(event: React.FormEvent<HTMLInputElement>) {
+    // console.log(event.currentTarget.value);
+    this.setState({
+      numberOfElementsString: event.currentTarget.value,
+    })
+  }
+
+  handleNumberOfElementsSubmit(event: React.MouseEvent<HTMLButtonElement>) {
+    const parsedValue = parseInt(this.state.numberOfElementsString)
+    if (Number.isNaN(parsedValue)) {
+      this.props.updateInputArgs("<Error: n is not a number>", [] as Array<number>)
+    } else if (parsedValue < 0) {
+      this.props.updateInputArgs("<Error: n is negative>", [] as Array<number>)
+    } else {
+      // const newArr = this.generateShuffledArgs(parsedValue)
+      const newArr = Array.from(Array(parsedValue).keys()).reverse();
+      this.props.updateInputArgs("", newArr)
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <div className="menu-input-args-sources-description-text">
+          <b>Reversed</b><br/>
+          Generates a list of n numbers in reversed order.
+        </div>
+
+        <label htmlFor="number-of-elements-input-field">Number of elements (n)</label>
+        <input
+          type="text"
+          name="number-of-elements-input-field"
+          value={this.state.numberOfElementsString}
+          onChange={this.handleNumberOfElementsStringChange.bind(this)}
+        />
+
+        <button onClick={this.handleNumberOfElementsSubmit.bind(this)}>
+          Generate new stack
+        </button>
+      </div>
+    )
+
+  }
+}
+
 interface IMenuInputArgsMostlySortedProps {
   updateInputArgs: (parseError: string, newArr: Array<number>) => void,
 }
@@ -331,7 +390,7 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
   constructor (props: IMenuInputArgsMostlySortedProps) {
     super(props);
     this.state = {
-      numberOfElementsString: "10",
+      numberOfElementsString: "50",
       proportionShuffled: 0.5,
       shuffleDistance: 0.1,
     }
@@ -420,8 +479,8 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
     return (
       <div>
         <div className="menu-input-args-sources-description-text">
-          <b>Adversarial - Mostly Sorted</b><br/>
-          Generates a mostly sorted list of n numbers: [0, n)
+          <b>Mostly Sorted</b><br/>
+          Generates a mostly sorted list of n numbers.
           <br/><br/>
           A sorted list has a proportion of entries (p) chosen and inserted in a position a limited distance (d) away.
         </div>
@@ -537,9 +596,7 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
         <div className="menu-input-args-sources-description-text">
           <b>Manual Entry</b><br/>
           Enter input args manually into box below. Moves separated by a space or tab char.<br/><br/>
-          Updates live as entry field is changed.<br/><br/>
-          More info: INSERT LINK<br/>
-          Source: INSERT LINK<br/>
+          Updates live as entry field is changed.
         </div>
 
         <label htmlFor="input-args-string-input-field">
@@ -557,19 +614,19 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
   }
 }
 
-interface IMenuInputArgsRandomGeneratorProps {
+interface IMenuInputArgsRandomProps {
   updateInputArgs: (parseError: string, newArr: Array<number>) => void,
 }
 
-interface IMenuInputArgsRandomGeneratorState {
+interface IMenuInputArgsRandomState {
   numberOfElementsString: string,
 }
 
-class MenuInputArgsRandomGenerator extends React.Component<IMenuInputArgsRandomGeneratorProps, IMenuInputArgsRandomGeneratorState> {
-  constructor(props: IMenuInputArgsRandomGeneratorProps) {
+class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMenuInputArgsRandomState> {
+  constructor(props: IMenuInputArgsRandomProps) {
     super(props)
     this.state = {
-      numberOfElementsString: ""
+      numberOfElementsString: "50"
     }
   }
 
@@ -613,8 +670,8 @@ class MenuInputArgsRandomGenerator extends React.Component<IMenuInputArgsRandomG
     return (
       <div>
         <div className="menu-input-args-sources-description-text">
-          <b>Random Generator</b><br/>
-          Generates a shuffled list of n numbers: [0, n)
+          <b>Random</b><br/>
+          Generates a shuffled list of n numbers.
         </div>
 
         <label htmlFor="number-of-elements-input-field">Number of elements (n)</label>
@@ -658,7 +715,7 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
       // // inputArgsEntryStringParseError: false,
       manualEntryUnlocked: false,
 
-      inputArgsSource: "random-generator",
+      inputArgsSource: "random",
     }
 
     // this.handleInputArgsGeneratorNumberChange = this.handleInputArgsGeneratorNumberChange.bind(this);
@@ -765,9 +822,9 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
 
   render() {
     let inputArgsSource = <div></div>
-    if (this.state.inputArgsSource === "random-generator") {
+    if (this.state.inputArgsSource === "random") {
       inputArgsSource = 
-        <MenuInputArgsRandomGenerator
+        <MenuInputArgsRandom
           updateInputArgs={this.props.updateInputArgs}
         />
     } else if (this.state.inputArgsSource === "manual-entry") {
@@ -776,9 +833,13 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
           updateInputArgs={this.props.updateInputArgs}
         />
     } else if (this.state.inputArgsSource === "mostly-sorted") {
-
       inputArgsSource = 
         <MenuInputArgsMostlySorted
+          updateInputArgs={this.props.updateInputArgs}
+        />
+    } else if (this.state.inputArgsSource === "reversed") {
+      inputArgsSource =
+        <MenuInputArgsReversed
           updateInputArgs={this.props.updateInputArgs}
         />
     }
@@ -793,9 +854,10 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
           value={this.state.inputArgsSource}
           onChange={this.handleInputArgsSourceChange.bind(this)}
         >
-          <option value="random-generator">Generator - Random</option>
           <option value="manual-entry">Manual Entry</option>
+          <option value="random">Generator - Random</option>
           <option value="mostly-sorted">Generator - Mostly Sorted</option>
+          <option value="reversed">Generator - Reversed</option>
           {/* <option value="adversarial-nearly-sorted">Adversarial: Nearly Sorted</option>  */}
           {/* <option value="adversarial-reversed">Adversarial: Reversed</option> */}
         </select>
@@ -829,7 +891,6 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
         {/* <button onClick={this.unlockRawInputArgsEntry}>
           Lock/unlock manual entry
         </button> */}
-        <br/>
         <br/>
         <label htmlFor="input-args-parsed">
           Parsed input arguments:
