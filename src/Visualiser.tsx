@@ -3,6 +3,7 @@ import "./Visualiser.css";
 
 import { VariableSizeList as List} from "react-window";
 import { isParenthesizedExpression } from 'typescript';
+import { constants } from 'os';
 
 interface IBarProps {
   value: number,
@@ -316,6 +317,153 @@ class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
   }
 }
 
+interface IMenuInputArgsMostlySortedProps {
+  updateInputArgs: (parseError: string, newArr: Array<number>) => void,
+}
+
+interface IMenuInputArgsMostlySortedState {
+  numberOfElementsString: string,
+  proportionShuffled: number,
+  shuffleDistance: number,
+}
+
+class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySortedProps, IMenuInputArgsMostlySortedState> {
+  constructor (props: IMenuInputArgsMostlySortedProps) {
+    super(props);
+    this.state = {
+      numberOfElementsString: "10",
+      proportionShuffled: 0.5,
+      shuffleDistance: 0.1,
+    }
+  }
+
+  handleNumberOfElementsStringChange(event: React.FormEvent<HTMLInputElement>) {
+    this.setState({
+      numberOfElementsString: event.currentTarget.value,
+    })
+  }
+
+  handleProportionShuffledChange(event: React.FormEvent<HTMLInputElement>) {
+    this.setState({
+      proportionShuffled: (parseInt(event.currentTarget.value) / 100),
+    })
+  }
+
+  handleShuffleDistanceChange(event: React.FormEvent<HTMLInputElement>) {
+    this.setState({
+      shuffleDistance: (parseInt(event.currentTarget.value) / 100),
+    })
+  }
+
+
+  moveElementInArray<T>(arr: Array<T>, from: number, to: number): Array<T> {
+    if (from < 0 ||
+      to < 0 ||
+      from > arr.length ||
+      to > arr.length ||
+      Number.isInteger(from) === false ||
+      Number.isInteger(to) === false) {
+        throw new RangeError("Index invalid"); 
+    }
+    if (from < to) {
+      return (([] as Array<T>).concat(
+        arr.slice(0, from),
+        arr.slice(from + 1, to),
+        arr.slice(from, from + 1),
+        arr.slice(to),
+      ))
+    }
+    if (to < from) {
+      return (([] as Array<T>).concat(
+        arr.slice(0, to),
+        arr.slice(from, from + 1),
+        arr.slice(to, from),
+        arr.slice(from + 1),
+        ))
+      }
+    // from === to
+    return arr;
+  }
+
+  generatePartiallyShuffledArgs(numberOfElements: number, proportionShuffled: number, shuffleDistance: number): Array<number> {
+    // const newArr = Array.from(Array(numberOfElements).keys());
+    const numberOfShuffles = Math.ceil(numberOfElements * proportionShuffled);
+    console.log(numberOfShuffles);
+    const indexOfShuffles = [...new Array(numberOfShuffles)].map(() => {
+      const from = Math.floor(Math.random() * numberOfElements);
+      const toMin = Math.max(0, from - Math.ceil(shuffleDistance * numberOfElements / 2));
+      const toMax = Math.min(numberOfElements - 1, from + Math.ceil(shuffleDistance * numberOfElements / 2));
+      const to = toMin + Math.floor(Math.random() * (toMax - toMin))
+      return {from: from, to: to};
+    });
+    const newArr = indexOfShuffles.reduce((arr, swap) => {
+      return this.moveElementInArray(arr, swap.from, swap.to)
+    }, Array.from(Array(numberOfElements).keys()));
+
+    return newArr;
+  }
+
+  handleGenerateListSubmit() {
+    const parsedValue = parseInt(this.state.numberOfElementsString);
+    if (Number.isNaN(parsedValue)) {
+      this.props.updateInputArgs("<Error: n is not a number>", [] as Array<number>);
+    } else if (parsedValue < 0) {
+      this.props.updateInputArgs("<Error: n is negative>", [] as Array<number>);
+    } else {
+      const newArr = this.generatePartiallyShuffledArgs(parsedValue, this.state.proportionShuffled, this.state.shuffleDistance);
+      console.log(newArr);
+      this.props.updateInputArgs("", newArr);
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <div className="menu-input-args-sources-description-text">
+          <b>Adversarial - Mostly Sorted</b><br/>
+          Generates a mostly sorted list of n numbers: [0, n)
+          <br/><br/>
+          A sorted list has a proportion of entries (p) chosen and inserted in a position a limited distance (d) away.
+        </div>
+
+        <label htmlFor="number-of-elements-input-field">Number of elements (n)</label>
+        <input
+          type="text"
+          name="number-of-elements-input-field"
+          value={this.state.numberOfElementsString}
+          onChange={this.handleNumberOfElementsStringChange.bind(this)}
+        />
+        <br/><br/>
+        <label htmlFor="proportion-of-elements-shuffled">Proportion shuffled (p): </label>
+        <output>{this.state.proportionShuffled}</output>
+        <input
+          type="range"
+          name="proportion-of-elements-shuffled"
+          min="0"
+          max="100"
+          value={this.state.proportionShuffled * 100}
+          onChange={this.handleProportionShuffledChange.bind(this)}
+        />
+        <br/><br/>
+        <label htmlFor="distance-to-move">Maximum relative shuffle distance (d): </label>
+        <output>{this.state.shuffleDistance}</output>
+        <input
+          type="range"
+          name="distance-to-move"
+          min="0"
+          max="100"
+          value={this.state.shuffleDistance * 100}
+          onChange={this.handleShuffleDistanceChange.bind(this)}
+        />
+        <br/>
+        <button onClick={this.handleGenerateListSubmit.bind(this)}>
+          Generate new stack
+        </button>
+      </div> 
+    )
+  }
+}
+
 interface IMenuInputArgsManualProps {
   updateInputArgs: (parseError: string, newArr: Array<number>) => void,
 }
@@ -354,7 +502,7 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
       return (`<Error: ${errorsString} found>`);
     }
 
-    const splitString = event.currentTarget.value.split(" ");
+    const splitString = event.currentTarget.value.trim().split(" ");
     const seenNumbers = new Set();
     const newArgs = [] as Array<number>;
     const errorsSeen = new Set() as Set<string>;
@@ -386,8 +534,8 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
   render() {
     return (
       <div>
-          <div className="menu-input-args-sources-description-text">
-          <b>Input Args Manual Entry</b><br/>
+        <div className="menu-input-args-sources-description-text">
+          <b>Manual Entry</b><br/>
           Enter input args manually into box below. Moves separated by a space or tab char.<br/><br/>
           Updates live as entry field is changed.<br/><br/>
           More info: INSERT LINK<br/>
@@ -469,7 +617,7 @@ class MenuInputArgsRandomGenerator extends React.Component<IMenuInputArgsRandomG
           Generates a shuffled list of n numbers: [0, n)
         </div>
 
-        <label htmlFor="number-of-elements-input-field">n: Number of elements</label>
+        <label htmlFor="number-of-elements-input-field">Number of elements (n)</label>
         <input
           type="text"
           name="number-of-elements-input-field"
@@ -627,6 +775,12 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
         <MenuInputArgsManual
           updateInputArgs={this.props.updateInputArgs}
         />
+    } else if (this.state.inputArgsSource === "mostly-sorted") {
+
+      inputArgsSource = 
+        <MenuInputArgsMostlySorted
+          updateInputArgs={this.props.updateInputArgs}
+        />
     }
 
     return (
@@ -639,8 +793,9 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
           value={this.state.inputArgsSource}
           onChange={this.handleInputArgsSourceChange.bind(this)}
         >
-          <option value="random-generator">Random Generator</option>
+          <option value="random-generator">Generator - Random</option>
           <option value="manual-entry">Manual Entry</option>
+          <option value="mostly-sorted">Generator - Mostly Sorted</option>
           {/* <option value="adversarial-nearly-sorted">Adversarial: Nearly Sorted</option>  */}
           {/* <option value="adversarial-reversed">Adversarial: Reversed</option> */}
         </select>
