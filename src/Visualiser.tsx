@@ -262,59 +262,6 @@ const Moves = (props: IMovesProps) => {
   )
 }
 
-interface INumberFormProps {
-  generateStartingState: (n: number) => void,
-}
-
-interface INumberFormState {
-  value: string,
-}
-
-class NumberForm extends React.Component<INumberFormProps, INumberFormState> {
-  constructor(props: INumberFormProps) {
-    super(props);
-    this.state = {
-      value: "10",
-    }
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-  }
-
-  handleChange(event: React.FormEvent<HTMLInputElement>) {
-    this.setState({
-      value: event.currentTarget.value,
-    })
-  }
-
-  handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    let parsed_value = parseInt(this.state.value);
-    if (isNaN(parsed_value)) {
-      this.props.generateStartingState(10);
-      this.setState({
-        value: "10",
-      })
-    } else {
-      this.props.generateStartingState(parsed_value);
-    }
-  }
-  
-  render () {
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <label>
-          Number of elements:
-          <br/>
-          <input type="text" value={this.state.value} onChange={this.handleChange}/>
-        </label>
-        <br/>
-        <input type="submit" value="Generate stack to be sorted"/>
-      </form>
-
-    )
-  }
-}
-
 interface IMenuInputArgsReversedProps {
   updateInputArgs: (parseError: string, newARr: Array<number>) => void,
 }
