@@ -914,7 +914,7 @@ class MenuMovesSourceSolutionLouis extends React.Component<IMenuMovesSourceSolut
           onClick={this.getMoves.bind(this)}
         >
           Get Moves
-        </button>
+        </button><br/>
 
         <label htmlFor="stdout">stdout</label><br/>
         <textarea
