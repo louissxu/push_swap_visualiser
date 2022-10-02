@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 import "./Visualiser.css";
-
 import { VariableSizeList as List} from "react-window";
+import { Move, stringToMove } from "./Utilities"
+import { getMovesSolutionLouis } from "./WasmWrapper";
 
 interface IBarProps {
   value: number,
@@ -100,21 +101,6 @@ const Stack = (props: IStackProps) => {
       </div>
     </div>
   );
-}
-
-export enum Move {
-  Start = "starting state",
-  Sa = "sa",
-  Sb = "sb",
-  Ss = "ss",
-  Pa = "pa",
-  Pb = "pb",
-  Ra = "ra",
-  Rb = "rb",
-  Rr = "rr",
-  Rra = "rra",
-  Rrb = "rrb",
-  Rrr = "rrr",
 }
 
 interface IMovesRowProps {
@@ -854,6 +840,106 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
   }
 }
 
+interface IMenuMovesSourceSolutionLouisProps {
+  inputArgs: Array<number>,
+  updateMoves: (parseError: string, moves: Array<Move>) => void,
+}
+
+interface IMenuMovesSourceSolutionLouisState {
+  return: string,
+  stdout: string,
+  stderr: string,
+}
+
+class MenuMovesSourceSolutionLouis extends React.Component<IMenuMovesSourceSolutionLouisProps, IMenuMovesSourceSolutionLouisState> {
+  constructor(props: IMenuMovesSourceSolutionLouisProps) {
+    super(props)
+    this.state = {
+      return: "",
+      stdout: "",
+      stderr: "",
+    }
+  }
+
+  formatArgs(inputArgs: Array<number>): Array<string> {
+    const formattedArgs = ([] as Array<string>).concat(
+      ["wasm-louis-solution"],
+      inputArgs.map(num => num.toString()),
+    );
+    return formattedArgs;
+  }
+
+  async getMoves() {
+    const result = await getMovesSolutionLouis(this.formatArgs(this.props.inputArgs))
+    const moves: Array<Move | null> = result.stdout.map((elem: string): Move | null => stringToMove(elem));
+    let parseError = "";
+    const moves_without_null = moves.reduce((res, item) => {
+      if (item === null) {
+        parseError = "<Error: Invalid output from program received>";
+        return res;
+      } else {
+        return ([...res, item]);
+      }
+    }, [] as Array<Move>)
+    
+    if (parseError) {
+      this.setState({
+        return: result.return,
+        stdout: result.stdout.join("\n"),
+        stderr: result.stderr.join("\n"),
+      })
+      this.props.updateMoves(parseError, [] as Array<Move>);
+    } else {
+      const moves_with_start: Array<Move> = [Move.Start, ...moves_without_null];
+      this.state = {
+        return: result.return,
+        stdout: result.stdout.join("\n"),
+        stderr: result.stderr.join("\n"),
+      }
+      this.props.updateMoves(parseError, moves_with_start);
+    }
+  }
+
+  render() {
+    return(
+      <div>
+        <div className="menu-moves-sources-description-text">
+          <b>Solution - @louissxu</b><br/>
+          Get moves from user solution by @louissxu.<br/><br/>
+          More info: INSERT LINK<br/>
+          Source: INSERT LINK<br/>
+        </div>
+
+        <button
+          onClick={this.getMoves.bind(this)}
+        >
+          Get Moves
+        </button>
+
+        <label htmlFor="stdout">stdout</label><br/>
+        <textarea
+          id="stdout"
+          value={this.state.stdout}
+          disabled={true}
+        /><br/>
+        <label htmlFor="stderr">stderr</label><br/>
+        <textarea
+          id="stderr"
+          value={this.state.stderr}
+          disabled={true}
+        /><br/>
+        <label htmlFor="return">return</label><br/>
+        <textarea
+          id="return"
+          value={this.state.return}
+          disabled={true}
+        /><br/>
+      </div>
+    )
+  }
+}
+
+
 interface IMenuMovesSourcePythonLinkerProps {
   inputArgs: Array<number>,
   updateMoves: (parseError: string, moves: Array<Move>) => void,
@@ -880,34 +966,6 @@ class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePython
     return url;
   }
 
-  stringToMove(str: string): Move | null {
-    switch(str){
-      case "sa":
-        return Move.Sa;
-      case "sb":
-        return Move.Sb;
-      case "ss":
-        return Move.Ss;
-      case "pa":
-        return Move.Pa;
-      case "pb":
-        return Move.Pb;
-      case "ra":
-        return Move.Ra;
-      case "rb":
-        return Move.Rb;
-      case "rr":
-        return Move.Rr;
-      case "rra":
-        return Move.Rra;
-      case "rrb":
-        return Move.Rrb;
-      case "rrr":
-        return Move.Rrr;
-    }    
-    return null;
-  }
-
   getMoves() {
     const url = this.generateQueryUrl(this.props.inputArgs);
     fetch(url).then((response) => {
@@ -916,7 +974,7 @@ class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePython
       const data = JSON.parse(text);
       const stdout: string = data.stdout
       const stderr: string = data.stderr;
-      const moves = stdout.trim().split("\n").map((elem: string) => this.stringToMove(elem));
+      const moves = stdout.trim().split("\n").map((elem: string) => stringToMove(elem));
       let parseError = "";
       const moves_without_null = moves.reduce((res, item) => {
         if (item === null) {
@@ -931,15 +989,16 @@ class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePython
           stdout: stdout,
           stderr: stderr,
         })
-        return ([parseError, [] as Array<Move>]);
+        this.props.updateMoves(parseError, [] as Array<Move>);
+        // return ([parseError, [] as Array<Move>]);
       } else {
         const moves_with_start: Array<Move> = [Move.Start, ...moves_without_null];
         this.setState({
-          // moves: moves_with_start,
           stdout: stdout,
           stderr: stderr,
         })
-        return [parseError, moves_with_start];
+        this.props.updateMoves(parseError, moves_with_start);
+        // return [parseError, moves_with_start];
       }  
     }).catch(() => {
       console.log("Error running linker (timeout? other error?)");
@@ -1119,6 +1178,12 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
     } else if (this.state.movesSource === "python-linker") {
       movesGenerator = 
         <MenuMovesSourcePythonLinker
+          inputArgs={this.props.inputArgs}
+          updateMoves={this.props.movesUpdate}
+        />
+    } else if (this.state.movesSource === "solution-louissxu") {
+      movesGenerator =
+        <MenuMovesSourceSolutionLouis
           inputArgs={this.props.inputArgs}
           updateMoves={this.props.movesUpdate}
         />

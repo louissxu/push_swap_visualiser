@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 // import App from './App';
-import Visualiser, { Move } from "./Visualiser";
+import Visualiser from "./Visualiser";
+import { Move } from "./Utilities";
 import reportWebVitals from './reportWebVitals';
 
 const startingValues = [7, 2, 6, 1, 8, 0, 9, 4, 5, 3];
