@@ -249,7 +249,8 @@ const Moves = (props: IMovesProps) => {
 }
 
 interface IMenuInputArgsReversedProps {
-  updateInputArgs: (parseError: string, newARr: Array<number>) => void,
+  numberOfElementsStartingValue: number,
+  updateInputArgs: (parseError: string, newArr: Array<number>) => void,
 }
 
 interface IMenuInputArgsReversedState {
@@ -260,7 +261,8 @@ class MenuInputArgsReversed extends React.Component<IMenuInputArgsReversedProps,
   constructor(props: IMenuInputArgsReversedProps) {
     super(props);
     this.state = {
-      numberOfElementsString: "50"
+      numberOfElementsString: props.numberOfElementsStartingValue.toString(),
+      // numberOfElementsString: "50"
     }
   }
 
@@ -310,6 +312,7 @@ class MenuInputArgsReversed extends React.Component<IMenuInputArgsReversedProps,
 }
 
 interface IMenuInputArgsMostlySortedProps {
+  numberOfElementsStartingValue: number,
   updateInputArgs: (parseError: string, newArr: Array<number>) => void,
 }
 
@@ -323,7 +326,8 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
   constructor (props: IMenuInputArgsMostlySortedProps) {
     super(props);
     this.state = {
-      numberOfElementsString: "50",
+      // numberOfElementsString: "50",
+      numberOfElementsString: props.numberOfElementsStartingValue.toString(),
       proportionShuffled: 0.5,
       shuffleDistance: 0.1,
     }
@@ -457,6 +461,7 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
 }
 
 interface IMenuInputArgsManualProps {
+  currentArgs: Array<number>,
   updateInputArgs: (parseError: string, newArr: Array<number>) => void,
 }
 
@@ -468,7 +473,8 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
   constructor(props: IMenuInputArgsManualProps) {
     super(props)
     this.state = {
-      inputArgsString: ""
+      inputArgsString: props.currentArgs.join(" "),
+      // inputArgsString: ""
     }
   }
 
@@ -548,6 +554,7 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
 }
 
 interface IMenuInputArgsRandomProps {
+  numberOfElementsStartingValue: number,
   updateInputArgs: (parseError: string, newArr: Array<number>) => void,
 }
 
@@ -559,7 +566,8 @@ class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMe
   constructor(props: IMenuInputArgsRandomProps) {
     super(props)
     this.state = {
-      numberOfElementsString: "50"
+      numberOfElementsString: props.numberOfElementsStartingValue.toString(),
+      // numberOfElementsString: "50"
     }
   }
 
@@ -758,21 +766,25 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
     if (this.state.inputArgsSource === "random") {
       inputArgsSource = 
         <MenuInputArgsRandom
+          numberOfElementsStartingValue={this.props.inputArgs.length}
           updateInputArgs={this.props.updateInputArgs}
         />
     } else if (this.state.inputArgsSource === "manual-entry") {
       inputArgsSource =
         <MenuInputArgsManual
+          currentArgs={this.props.inputArgs}
           updateInputArgs={this.props.updateInputArgs}
         />
     } else if (this.state.inputArgsSource === "mostly-sorted") {
       inputArgsSource = 
         <MenuInputArgsMostlySorted
+          numberOfElementsStartingValue={this.props.inputArgs.length}
           updateInputArgs={this.props.updateInputArgs}
         />
     } else if (this.state.inputArgsSource === "reversed") {
       inputArgsSource =
         <MenuInputArgsReversed
+          numberOfElementsStartingValue={this.props.inputArgs.length}
           updateInputArgs={this.props.updateInputArgs}
         />
     }
@@ -1330,14 +1342,14 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
   render() {
     return (
       <div className="menu-container">
-        <div>
-          <h1>Push Swap<br/>Visualiser</h1>
-          <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
-          <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
-          <h3>Menu</h3>
-          <hr/>
-        </div>
         <div className="menu-subcontainer">
+          <div>
+            <h1>Push Swap<br/>Visualiser</h1>
+            <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
+            <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
+            <h3>Menu</h3>
+            <hr/>
+          </div>
           <MenuInputArgs
             inputArgs={this.props.inputArgs}
             inputArgsParseError={this.props.inputArgsParseError}
@@ -1367,7 +1379,6 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           <output>{this.props.playbackFpsRounded} </output>
           fps
           <input
-            className="menu-slider"
             type="range"
             id="playback-speed"
             name="playback-speed"
@@ -1392,10 +1403,10 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           >
             Play Forwards
           </button>
+          <br/>
           <label htmlFor="playback-frame-number">Playback Frame Number: </label>
           <output>{this.props.playbackCurrentFrameNumber}</output>
           <input
-            className="menu-slider"
             type="range"
             id="playback-frame-number"
             name="playback-frame-number"
