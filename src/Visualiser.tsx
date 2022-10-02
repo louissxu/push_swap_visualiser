@@ -7,26 +7,24 @@ import { getMovesSolutionLouis } from "./WasmWrapper";
 interface IBarProps {
   value: number,
   key: number,
+  min_value: number,
   max_value: number,
   num_values: number,
   available_width: number,
   available_height: number,
 }
 
-interface IBarState {
-
-}
-
-class Bar extends React.PureComponent<IBarProps, IBarState> {
+class Bar extends React.PureComponent<IBarProps> {
   constructor(props: IBarProps) {
     super(props)
     this.state = {
     }
   }
   render() {
-    const width: number = (this.props.value + 1) * this.props.available_width / this.props.max_value;
+    const barValue: number = this.props.value - this.props.min_value + 1;
+    const width: number = (barValue) * this.props.available_width / (this.props.max_value - this.props.min_value);
     const height: number = Math.max(0, Math.min(50, this.props.available_height / this.props.num_values));
-    const hue: number = 240 - (240 / Math.max(1, (this.props.max_value - 1))* this.props.value);
+    const hue: number = 240 - (240 / Math.max(1, ((this.props.max_value - this.props.min_value) - 1))* barValue);
     let text: string | null = this.props.value.toString();
     if (height < 10) {
       text = null;
@@ -48,6 +46,7 @@ class Bar extends React.PureComponent<IBarProps, IBarState> {
 
 interface IStackProps {
   values: Array<number>,
+  min_value: number,
   max_value: number,
   num_values: number,
   title: string,
@@ -76,11 +75,12 @@ const Stack = (props: IStackProps) => {
     }
   })
     
-  const renderBar = (val: number, key: number, max_value: number, num_values: number, stack_width: number, stack_height: number) => {
+  const renderBar = (val: number, key: number, min_value: number, max_value: number, num_values: number, stack_width: number, stack_height: number) => {
     return (
       <Bar
         value={val}
         key={key}
+        min_value={min_value}
         max_value={max_value}
         num_values={num_values}
         available_width={stack_width - 10}
@@ -96,7 +96,7 @@ const Stack = (props: IStackProps) => {
       <h3 className="stack-title">{props.title}</h3>
       <div className="stack-subcontainer" ref={targetRef}>
         <ul className="stack-content">
-          {values.map((elem) => renderBar(elem, elem, props.max_value, props.num_values, stackSize.width, stackSize.height))}
+          {values.map((elem) => renderBar(elem, elem, props.min_value, props.max_value, props.num_values, stackSize.width, stackSize.height))}
         </ul>
       </div>
     </div>
@@ -506,9 +506,9 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
       if (seenNumbers.has(newVal)) {
         errorsSeen.add("duplicate");
       }
-      if (newVal < 0) {
-        errorsSeen.add("negative");
-      }
+      // if (newVal < 0) {
+      //   errorsSeen.add("negative");
+      // }
       seenNumbers.add(newVal);
       newArgs.push(newVal);
     })
@@ -1422,6 +1422,7 @@ interface IVisualiserState {
   input_string_parsing_error: string,
   stdout: string,
   stderr: string,
+  min_value: number,
   max_value: number,
   num_values: number,
   playback_fps_slider_value: number,
@@ -1443,6 +1444,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       input_string_parsing_error: "",
       stdout: "",
       stderr: "",
+      min_value: Math.min(...this.props.values),
       max_value: Math.max(...this.props.values) + 1,
       num_values: this.props.values.length,
       playback_fps_slider_value: 23,
@@ -1772,6 +1774,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         input_string_parsing_error: "",
         moves: [Move.Start],
         current_move_num: 0,
+        min_value: Math.min(...newArr),
         max_value: Math.max(...newArr) + 1,
         num_values: newArr.length,
         frames: [{stack_a: newArr, stack_b: ([] as Array<number>)}],
@@ -1915,12 +1918,14 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
         <div className="stack-spacer"></div>
         <Stack
           values={this.state.frames[this.state.current_move_num].stack_a}
+          min_value={this.state.min_value}
           max_value={this.state.max_value}
           num_values={this.state.num_values}
           title="Stack A"/>
         <div className="stack-spacer"></div>
         <Stack
           values={this.state.frames[this.state.current_move_num].stack_b}
+          min_value={this.state.min_value}
           max_value={this.state.max_value}
           num_values={this.state.num_values}
           title="Stack B"/>
