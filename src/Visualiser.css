@@ -25,13 +25,9 @@
   width: 100%;
 }
 
-.menu-slider {
+input[type="range"] {
   width: 90%;
 }
-
-/* input[type="range"] {
-  width: 90%;
-} */
 
 .menu-input-args-sources-description-text {
   background-color: #b6bdc5;
