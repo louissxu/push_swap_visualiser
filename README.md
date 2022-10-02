@@ -1,6 +1,6 @@
 # Push Swap Visualiser
 
-A visualiser for push_swap. A 42 school algorithm design project.
+A learning aid and visualiser for push_swap - a 42 school algorithm design project.
 
 ## Quick Start
 
@@ -26,7 +26,7 @@ python3 linker.py push_swap
 # python3 linker.py /home/username/Desktop/push_swap_folder/push_swap
 ```
 
-Leave the terminal running with the local webserver running. This is what allows the visualiser website to call your solution.
+Leave this terminal open with the local webserver running. This is what allows the visualiser website to call your solution.
 
 You should now be able to call your push_swap implementation from INSERT LINK and visualise the solution that your program generates.
 ___
