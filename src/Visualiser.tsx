@@ -1330,74 +1330,81 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
   render() {
     return (
       <div className="menu-container">
-        <h1>Push Swap<br/>Visualiser</h1>
-        <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
-        <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
-        <h3>Menu</h3>
-        <MenuInputArgs
-          inputArgs={this.props.inputArgs}
-          inputArgsParseError={this.props.inputArgsParseError}
-          updateInputArgs={this.handleUpdateInputArgs.bind(this)}
-        />
-        <MenuMoves
-          // moves={this.props.programParsedMoves}
-          inputArgs={this.props.inputArgs}
-          moves={this.props.moves}
-          movesParseError={this.props.movesParseError}
-          movesUpdate={this.props.movesUpdate}
-        />
+        <div>
+          <h1>Push Swap<br/>Visualiser</h1>
+          <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
+          <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
+          <h3>Menu</h3>
+          <hr/>
+        </div>
+        <div className="menu-subcontainer">
+          <MenuInputArgs
+            inputArgs={this.props.inputArgs}
+            inputArgsParseError={this.props.inputArgsParseError}
+            updateInputArgs={this.handleUpdateInputArgs.bind(this)}
+          />
+          <MenuMoves
+            // moves={this.props.programParsedMoves}
+            inputArgs={this.props.inputArgs}
+            moves={this.props.moves}
+            movesParseError={this.props.movesParseError}
+            movesUpdate={this.props.movesUpdate}
+          />
 
-        <h4>Playback Controls</h4>
-        <button
-          onClick={this.handleStepBackward.bind(this)}
-        >
-          Step Backward
-        </button>
-        <button
-          onClick={this.handleStepForward.bind(this)}
-        >
-          Step Forward
-        </button>
-        <br/>
-        <label htmlFor="playback-speed">Playback Speed: </label>
-        <output>{this.props.playbackFpsRounded} </output>
-        fps
-        <input
-          type="range"
-          id="playback-speed"
-          name="playback-speed"
-          min="0"
-          max="60"
-          value={this.props.playbackFpsSliderValue.toString()}
-          onChange={this.handlePlaybackSpeedChange.bind(this)}
-        />
-        <br></br>
-        <button
-          onClick={this.handlePlaybackPlayBackward.bind(this)}
-        >
-          Play Backwards
-        </button>
-        <button
-          onClick={this.handlePlaybackPause.bind(this)}
-        >
-          Pause
-        </button>
-        <button
-          onClick={this.handlePlaybackPlayForward.bind(this)}
-        >
-          Play Forwards
-        </button>
-        <label htmlFor="playback-frame-number">Playback Frame Number: </label>
-        <output>{this.props.playbackCurrentFrameNumber}</output>
-        <input
-          type="range"
-          id="playback-frame-number"
-          name="playback-frame-number"
-          min="0"
-          max={this.props.playbackMaxFrameCount.toString()}
-          value={this.props.playbackCurrentFrameNumber.toString()}
-          onChange={this.handlePlaybackFrameNumberChange.bind(this)}
-        />
+          <h4>Playback Controls</h4>
+          <button
+            onClick={this.handleStepBackward.bind(this)}
+          >
+            Step Backward
+          </button>
+          <button
+            onClick={this.handleStepForward.bind(this)}
+          >
+            Step Forward
+          </button>
+          <br/>
+          <label htmlFor="playback-speed">Playback Speed: </label>
+          <output>{this.props.playbackFpsRounded} </output>
+          fps
+          <input
+            className="menu-slider"
+            type="range"
+            id="playback-speed"
+            name="playback-speed"
+            min="0"
+            max="60"
+            value={this.props.playbackFpsSliderValue.toString()}
+            onChange={this.handlePlaybackSpeedChange.bind(this)}
+          />
+          <br></br>
+          <button
+            onClick={this.handlePlaybackPlayBackward.bind(this)}
+          >
+            Play Backwards
+          </button>
+          <button
+            onClick={this.handlePlaybackPause.bind(this)}
+          >
+            Pause
+          </button>
+          <button
+            onClick={this.handlePlaybackPlayForward.bind(this)}
+          >
+            Play Forwards
+          </button>
+          <label htmlFor="playback-frame-number">Playback Frame Number: </label>
+          <output>{this.props.playbackCurrentFrameNumber}</output>
+          <input
+            className="menu-slider"
+            type="range"
+            id="playback-frame-number"
+            name="playback-frame-number"
+            min="0"
+            max={this.props.playbackMaxFrameCount.toString()}
+            value={this.props.playbackCurrentFrameNumber.toString()}
+            onChange={this.handlePlaybackFrameNumberChange.bind(this)}
+          />
+        </div>
       </div>
     )
   }
