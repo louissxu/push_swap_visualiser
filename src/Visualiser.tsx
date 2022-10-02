@@ -891,11 +891,11 @@ class MenuMovesSourceSolutionLouis extends React.Component<IMenuMovesSourceSolut
       this.props.updateMoves(parseError, [] as Array<Move>);
     } else {
       const moves_with_start: Array<Move> = [Move.Start, ...moves_without_null];
-      this.setState = {
+      this.setState({
         return: result.return,
         stdout: result.stdout.join("\n"),
         stderr: result.stderr.join("\n"),
-      }
+      })
       this.props.updateMoves(parseError, moves_with_start);
     }
   }
