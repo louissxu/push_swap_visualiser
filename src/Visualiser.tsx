@@ -1053,7 +1053,7 @@ class MenuMovesSourceManual extends React.Component<IMenuMovesSourceManualProps,
   constructor(props: IMenuMovesSourceManualProps) {
     super(props)
     this.state = {
-      inputString: this.props.moves.join("\n"),
+      inputString: this.props.moves.slice(1).join("\n"),
       // inputString: "",
     }
   }
@@ -1101,7 +1101,7 @@ class MenuMovesSourceManual extends React.Component<IMenuMovesSourceManualProps,
         return ([...newMoves])
       }
       return ([...newMoves, parsedMove])
-    }, [] as Array<Move>)
+    }, [Move.Start] as Array<Move>)
     return [parseError, newMoves]
   }
 
@@ -1866,15 +1866,20 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }  
 
   movesUpdate(parseError: string, newMoves: Array<Move>) {
+    this.playbackPause();
     if (parseError) {
       this.setState({
         moves_parsing_error: parseError,
-        moves: [] as Array<Move>,
+        moves: [Move.Start] as Array<Move>,
+        current_move_num: 0,
+        frames: this.state.frames.slice(0, 1),
       })
     } else {
       this.setState({
         moves_parsing_error: "",
         moves: newMoves,
+        current_move_num: 0,
+        frames: this.state.frames.slice(0, 1),
       })
     }
 
