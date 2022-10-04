@@ -2,6 +2,8 @@
 
 A learning aid and visualiser for push_swap - a 42 school algorithm design project.
 
+**Hosted at - https://louissxu.github.io/push_swap_visualiser/**
+
 ## Quick Start
 
 Download the python linker (./linker/linker.py). The easiest is to put it in the same directory as your push_swap executable. However it will run from any directory.
@@ -28,7 +30,7 @@ python3 linker.py push_swap
 
 Leave this terminal open with the local webserver running. This is what allows the visualiser website to call your solution.
 
-You should now be able to call your push_swap implementation from INSERT LINK and visualise the solution that your program generates.
+You should now be able to call your push_swap implementation from the hosted [github pages site](https://louissxu.github.io/push_swap_visualiser/) and visualise the solution that your program generates.
 ___
 
 ## Introduction
