@@ -76,3 +76,8 @@ Discuss workings of Python linker and design choices made.
 ### WASM solutions
 
 Discuss implementation of WASM embedding of C code solutions. Add method. Add how to add PR if people want to add other good solutions.
+
+
+### GH pages
+
+Add discussion about hosting on GH pages
