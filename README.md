@@ -69,6 +69,8 @@ A further advantage of this is that it minimises the user-side setup as much as 
 
 ### Website Visualiser
 
+The visualiser is designed as a React framework single page app. It is able to generate random data, run the selected program to get the moves to sort the data, then it is able to playback this visually. It provides playback controls to control playback speed and allow scrubbing through the timeline.
+
 Discuss the visualiser.
 
 ### Python Linker
