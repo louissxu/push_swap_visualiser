@@ -75,6 +75,8 @@ Discuss the visualiser.
 
 ### Python Linker
 
+The visualiser is designed to allow users to run their own C code solutions (or solutions in progress) so they can view the output. To allow this there must be a way to run arbitrary C code. However
+
 Discuss workings of Python linker and design choices made.
 
 ### WASM solutions
