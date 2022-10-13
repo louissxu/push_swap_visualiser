@@ -75,9 +75,11 @@ Discuss the visualiser.
 
 ### Python Linker
 
-The visualiser is designed to allow users to run their own C code solutions (or solutions in progress) so they can view the output. To allow this there must be a way to run arbitrary C code. However
+The visualiser is designed to allow users to run their own C code solutions (or solutions in progress) so they can view the output. However, running native C code from a web browser is non trivial. For good reason, a web browser is not able to arbitrarily access and run a local C executable via shell or similar. Nor can the executable be natively run from within the web browser session unless it is specifically compiled to this target (ie using Web Assembly). Web assembly is a good solution for demo code (and is how I have added my own solution - see below), however it is likely an unreasonable barrier for users to compile to a different target to allow it to be run by the visualiser.
 
-Discuss workings of Python linker and design choices made.
+The solution was to use a small python middleware script. Python has the ability to execute local C code. The solution was to write a python program that when run would open a local host http server. A request sent to this server would trigger the program to be run (with arguments encoded as part of the get string) and the results would be returned as the http response with the header containing the relavent data.
+
+This allows the visualiser to call the user's C program via this linker and allow user solutions to be utilised and presented.
 
 ### WASM solutions
 
