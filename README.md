@@ -83,6 +83,8 @@ This allows the visualiser to call the user's C program via this linker and allo
 
 ### WASM solutions
 
+The solutions to this problem are typically coded in C. A design goal was to have some efficient solutions available as demos for people to be able to view. These were added through the addition of WebAssembly. The solution was cpiled using emscripten to a module that could be called by the JavaScript program. This would allow a full working solution to be encapsulated within the website as a demo in case people wanted to view a solution without compiling their own C code and running the linker.
+
 Discuss implementation of WASM embedding of C code solutions. Add method. Add how to add PR if people want to add other good solutions.
 
 
