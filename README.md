@@ -4,6 +4,10 @@ A learning aid and visualiser for push_swap - a 42 school algorithm design proje
 
 **Hosted at - https://louissxu.github.io/push_swap_visualiser/**
 
+## Demo
+
+Select "Solution - @louissxu" for a embedded solution to view the functioning of the visualiser for a demo of this react project. However, if you are a current 42 student I would strongly suggest not viewing this solution before trying to design and optimise your own solution. A large part of the value of this project is the reasoning and solving the puzzle yourself.
+
 ## Quick Start
 
 Download the python linker (./linker/linker.py). The easiest is to put it in the same directory as your push_swap executable. However it will run from any directory.
