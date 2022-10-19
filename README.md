@@ -59,7 +59,6 @@ For some students, the second part of this problem can be somewhat tricky. Figur
 
 ```bash
 python3
-# That's it!
 ```
 An intentional design constraint was to use only Python and limit this to only the standard library. There is no requirement for any non default modules or other software to be installed on your computer.
 
