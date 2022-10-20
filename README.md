@@ -74,8 +74,6 @@ A further advantage of this is that it minimises the user-side setup as much as 
 
 The visualiser is designed as a React framework single page app. It is able to generate random data, run the selected program to get the moves to sort the data, then it is able to playback this visually. It provides playback controls to control playback speed and allow scrubbing through the timeline.
 
-Discuss the visualiser.
-
 ### Python Linker
 
 The visualiser is designed to allow users to run their own C code solutions (or solutions in progress) so they can view the output. However, running native C code from a web browser is non trivial. For good reason, a web browser is not able to arbitrarily access and run a local C executable via shell or similar. Nor can the executable be natively run from within the web browser session unless it is specifically compiled to this target (ie using Web Assembly). Web assembly is a good solution for demo code (and is how I have added my own solution - see below), however it is likely an unreasonable barrier for users to compile to a different target to allow it to be run by the visualiser.
