@@ -86,10 +86,38 @@ This allows the visualiser to call the user's C program via this linker and allo
 
 The solutions to this problem are typically coded in C. A design goal was to be able to add my solution (and potentially demo solutions from others) for people to be able to view. These were added through the addition of WebAssembly. The solution was compiled using emscripten to a module that could be called by the JavaScript program. This would allow a full working solution to be encapsulated within the website as a demo in case people wanted to view a solution without compiling their own C code and running the linker.
 
-Emscripten is designed as a drop-in replacement for gcc. For this use case however, some modification of the user Makefiles is required to make it compile to a useable module with encapsulated Wasm.
+Emscripten is designed as a drop-in replacement for gcc. For this use case, some modification of the user Makefiles is required to make it compile the C project to a useable module with encapsulated Wasm.
 
-Discuss implementation of WASM embedding of C code solutions. Add method. Add how to add PR if people want to add other good solutions.
+**Compile libft into a library that is compatible with emscripten**
 
+```bash
+# Create objects
+emcc $(CFLAGS) -I $(INCLUDES) -c $< -o $@
+# Package objects into library
+emar rcs libft $(OBJS)
+```
+
+**Compile push_swap into Wasm module**
+```bash
+emcc
+  # Standard args as used with GCC
+  $(CFLAGS)
+  -I $(INCLUDES)
+  -I $(LIBFT_INCLUDES)
+  -L libft
+  $(OBJS)
+  $(OBJS_PUSH_SWAP)
+  -lft
+  # Emscripten args added to compile correctly
+  -pre-js preJs.js
+  -s WASM=0
+  -s ENVIRONMENT=web
+  -s MODULARIZE=1
+  -s EXPORTED_FUNCTIONS=_main,_malloc,_free
+  -s EXPORTED_RUNTIME_METHODS=cwrap,ccall,stringToUTF8,lengthBytesUTF8,setValue
+  # Output file name
+  -o $@.js
+```
 
 ### GH pages
 
