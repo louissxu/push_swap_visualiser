@@ -108,8 +108,9 @@ emcc
   $(OBJS)
   $(OBJS_PUSH_SWAP)
   -lft
+  # Emscripten setting to add prepended js to module. Pipes stdout/stderr to object property
+  -pre-js preJs.js 
   # Emscripten args added to compile correctly
-  -pre-js preJs.js
   -s WASM=0
   -s ENVIRONMENT=web
   -s MODULARIZE=1
