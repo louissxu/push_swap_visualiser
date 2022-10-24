@@ -122,4 +122,4 @@ emcc
 
 ### GH pages
 
-Add discussion about hosting on GH pages
+Deployed to github with github pages. Ref: https://github.com/gitname/react-gh-pages
