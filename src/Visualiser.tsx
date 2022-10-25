@@ -4,6 +4,9 @@ import { VariableSizeList as List} from "react-window";
 import { Move, stringToMove } from "./Utilities"
 import { getMovesSolutionLouis } from "./WasmWrapper";
 
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css"
+
 interface IBarProps {
   value: number,
   key: number,
@@ -791,8 +794,8 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
 
     return (
       <div className="menu-input-args">
-        <h4>Data Controls</h4>
-        <label htmlFor="input-args-source">Select Input Arguments Source</label>
+        <p>Select source for input arguments. This source will be used to generate the data to be sorted.</p>
+        <label htmlFor="input-args-source"><b>Source:</b></label><br/>
         <select
           id="input-args-source"
           name="input-args-source"
@@ -806,6 +809,7 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
           {/* <option value="adversarial-nearly-sorted">Adversarial: Nearly Sorted</option>  */}
           {/* <option value="adversarial-reversed">Adversarial: Reversed</option> */}
         </select>
+        <br/><br/>
 
         {inputArgsSource}
 
@@ -836,9 +840,9 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
         {/* <button onClick={this.unlockRawInputArgsEntry}>
           Lock/unlock manual entry
         </button> */}
-        <br/>
+        <br/><br/>
         <label htmlFor="input-args-parsed">
-          Parsed input arguments:
+          <b>Result - Input arguments:</b>
         </label>
         <input
           type="text"
@@ -1348,73 +1352,85 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
             <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
             <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
             <h3>Menu</h3>
-            <hr/>
           </div>
-          <MenuInputArgs
-            inputArgs={this.props.inputArgs}
-            inputArgsParseError={this.props.inputArgsParseError}
-            updateInputArgs={this.handleUpdateInputArgs.bind(this)}
-          />
-          <MenuMoves
-            // moves={this.props.programParsedMoves}
-            inputArgs={this.props.inputArgs}
-            moves={this.props.moves}
-            movesParseError={this.props.movesParseError}
-            movesUpdate={this.props.movesUpdate}
-          />
+          <Tabs>
+            <TabList>
+              <Tab>Data</Tab>
+              <Tab>Moves</Tab>
+              <Tab>Playback</Tab>
+            </TabList>
+            <TabPanel>
+              <MenuInputArgs
+                inputArgs={this.props.inputArgs}
+                inputArgsParseError={this.props.inputArgsParseError}
+                updateInputArgs={this.handleUpdateInputArgs.bind(this)}
+              />
+            </TabPanel>
+            <TabPanel>
+              <MenuMoves
+                // moves={this.props.programParsedMoves}
+                inputArgs={this.props.inputArgs}
+                moves={this.props.moves}
+                movesParseError={this.props.movesParseError}
+                movesUpdate={this.props.movesUpdate}
+              />
+            </TabPanel>
+            <TabPanel>
+              <h4>Playback Controls</h4>
+              <button
+                onClick={this.handleStepBackward.bind(this)}
+              >
+                Step Backward
+              </button>
+              <button
+                onClick={this.handleStepForward.bind(this)}
+              >
+                Step Forward
+              </button>
+              <br/>
+              <label htmlFor="playback-speed">Playback Speed: </label>
+              <output>{this.props.playbackFpsRounded} </output>
+              fps
+              <input
+                type="range"
+                id="playback-speed"
+                name="playback-speed"
+                min="0"
+                max="60"
+                value={this.props.playbackFpsSliderValue.toString()}
+                onChange={this.handlePlaybackSpeedChange.bind(this)}
+              />
+              <br></br>
+              <button
+                onClick={this.handlePlaybackPlayBackward.bind(this)}
+              >
+                Play Backwards
+              </button>
+              <button
+                onClick={this.handlePlaybackPause.bind(this)}
+              >
+                Pause
+              </button>
+              <button
+                onClick={this.handlePlaybackPlayForward.bind(this)}
+              >
+                Play Forwards
+              </button>
+              <br/>
+              <label htmlFor="playback-frame-number">Playback Frame Number: </label>
+              <output>{this.props.playbackCurrentFrameNumber}</output>
+              <input
+                type="range"
+                id="playback-frame-number"
+                name="playback-frame-number"
+                min="0"
+                max={this.props.playbackMaxFrameCount.toString()}
+                value={this.props.playbackCurrentFrameNumber.toString()}
+                onChange={this.handlePlaybackFrameNumberChange.bind(this)}
+              />
+            </TabPanel>
+          </Tabs>
 
-          <h4>Playback Controls</h4>
-          <button
-            onClick={this.handleStepBackward.bind(this)}
-          >
-            Step Backward
-          </button>
-          <button
-            onClick={this.handleStepForward.bind(this)}
-          >
-            Step Forward
-          </button>
-          <br/>
-          <label htmlFor="playback-speed">Playback Speed: </label>
-          <output>{this.props.playbackFpsRounded} </output>
-          fps
-          <input
-            type="range"
-            id="playback-speed"
-            name="playback-speed"
-            min="0"
-            max="60"
-            value={this.props.playbackFpsSliderValue.toString()}
-            onChange={this.handlePlaybackSpeedChange.bind(this)}
-          />
-          <br></br>
-          <button
-            onClick={this.handlePlaybackPlayBackward.bind(this)}
-          >
-            Play Backwards
-          </button>
-          <button
-            onClick={this.handlePlaybackPause.bind(this)}
-          >
-            Pause
-          </button>
-          <button
-            onClick={this.handlePlaybackPlayForward.bind(this)}
-          >
-            Play Forwards
-          </button>
-          <br/>
-          <label htmlFor="playback-frame-number">Playback Frame Number: </label>
-          <output>{this.props.playbackCurrentFrameNumber}</output>
-          <input
-            type="range"
-            id="playback-frame-number"
-            name="playback-frame-number"
-            min="0"
-            max={this.props.playbackMaxFrameCount.toString()}
-            value={this.props.playbackCurrentFrameNumber.toString()}
-            onChange={this.handlePlaybackFrameNumberChange.bind(this)}
-          />
         </div>
       </div>
     )

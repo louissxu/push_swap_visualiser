@@ -9,7 +9,7 @@
 
 .menu-container {
   background-color: #d1d5da;
-  padding: 0px 20px 0px 20px;
+  padding: 0px 10px 0px 10px;
   height: 100vh;
   box-sizing: border-box;
   flex: 0 0.1 300px;
@@ -29,11 +29,16 @@ input[type="range"] {
   width: 90%;
 }
 
+.menu-input-args > * {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
 .menu-input-args-sources-description-text {
   background-color: #b6bdc5;
   margin-top: 10px;
   margin-bottom: 10px;
-  padding: 10px;
+  outline: 5px solid #b6bdc5
 }
 
 .menu-moves-sources-description-text {
