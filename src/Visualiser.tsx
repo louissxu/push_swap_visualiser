@@ -1234,6 +1234,45 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
   }
 }
 
+interface IMenuPlaybackProps {
+  stepBackward: () => void,
+  stepForward: () => void,
+}
+
+interface IMenuPlaybackState {
+
+}
+
+class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackState> {
+  constructor(props: IMenuPlaybackProps) {
+    super(props)
+    this.state = {
+
+    }
+  }
+
+  render() {
+
+    return (
+      <div className="menu-playback">
+        <h4>Playback Controls</h4>
+        <button
+          onClick={this.props.stepBackward}
+        >
+          Step Backward
+        </button>
+        <button
+          onClick={this.props.stepForward}
+        >
+          Step Forward
+        </button>
+        {/* <label htmlFor="playback-speed">Playback Speed: </label> 
+        <output></output> */}
+      </div>
+    )
+  }
+}
+
 interface IMenuProps {
   stepForward: () => void,
   stepBackward: () => void,
@@ -1361,6 +1400,10 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
             moves={this.props.moves}
             movesParseError={this.props.movesParseError}
             movesUpdate={this.props.movesUpdate}
+          />
+          <MenuPlayback
+            stepBackward={this.props.stepBackward}
+            stepForward={this.props.stepForward}
           />
 
           <h4>Playback Controls</h4>
