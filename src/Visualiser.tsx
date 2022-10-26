@@ -1237,6 +1237,13 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
 interface IMenuPlaybackProps {
   stepBackward: () => void,
   stepForward: () => void,
+  playbackFpsRounded: number,
+  playbackFpsSliderValue: number,
+  updatePlaybackSpeed: (newValue: number) => void,
+  playbackPause: () => void,
+  playbackPlayForward: () => void,
+  playbackPlayBackward: () => void,
+  
 }
 
 interface IMenuPlaybackState {
@@ -1249,6 +1256,22 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
     this.state = {
 
     }
+  }
+
+  handlePlaybackPause() {
+    this.props.playbackPause();
+  }
+  
+  handlePlaybackPlayForward() {
+    this.props.playbackPlayForward();
+  }
+  
+  handlePlaybackPlayBackward() {
+    this.props.playbackPlayBackward();
+  }
+
+  handlePlaybackSpeedChange(event: React.FormEvent<HTMLInputElement>) {
+    this.props.updatePlaybackSpeed(parseInt(event.currentTarget.value));
   }
 
   render() {
@@ -1265,9 +1288,27 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
           onClick={this.props.stepForward}
         >
           Step Forward
-        </button>
-        {/* <label htmlFor="playback-speed">Playback Speed: </label> 
-        <output></output> */}
+        </button><br/>
+        <label htmlFor="playback-speed">Playback Speed: </label>
+        <output>{this.props.playbackFpsRounded.toString() + "fps"}</output>
+        <input
+          type="range"
+          id="playback-speed"
+          name="playback-speed"
+          min="0"
+          max="60"
+          value={this.props.playbackFpsSliderValue.toString()}
+          onChange={this.handlePlaybackSpeedChange.bind(this)}
+        />
+        <button
+          onClick={this.handlePlaybackPlayBackward.bind(this)}
+        >Play Backward</button>
+        <button
+          onClick={this.handlePlaybackPause.bind(this)}
+        >Pause</button>
+        <button
+          onClick={this.handlePlaybackPlayForward.bind(this)}
+        >Play Forward</button>
       </div>
     )
   }
@@ -1404,6 +1445,12 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
           <MenuPlayback
             stepBackward={this.props.stepBackward}
             stepForward={this.props.stepForward}
+            playbackFpsRounded={this.props.playbackFpsRounded}
+            playbackFpsSliderValue={this.props.playbackFpsSliderValue}
+            updatePlaybackSpeed={this.props.updatePlaybackSpeed}
+            playbackPause={this.props.playbackPause}
+            playbackPlayForward={this.props.playbackPlayForward}
+            playbackPlayBackward={this.props.playbackPlayBackward}
           />
 
           <h4>Playback Controls</h4>
