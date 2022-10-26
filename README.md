@@ -60,9 +60,9 @@ For some students, the second part of this problem can be somewhat tricky. Figur
 ```bash
 python3
 ```
-An intentional design constraint was to use only Python and limit this to only the standard library. There is no requirement for any non default modules or other software to be installed on your computer.
+An intentional design constraint was to limit the user side requirements. In practice this means that the program requires only Python 3 and is limited to only the standard library. There is no requirement for any non default modules or other software to be installed on your computer. Additionally, there is no setup or user side modification of their C program have it interface with this visualiser.
 
-Depending on the setup of your school, certain utilities like cmake may not be available. And often certain non-default modules may not be available. However, all school macs should have *some* version of python3 with it's accompanying standard library installed by default.
+Depending on the setup of your school, certain utilities like cmake may not be available. And often certain non-default modules may not be available. Aditionally, at the learning stage of this project, it may be beyond the capabilities of the students to say, compile their package to a different target (eg to ask them to compile it to Wasm). However, all school macs should have *some* recent version of Python 3 with it's accompanying standard library installed by default. Then the user side involvement is limited to downloading and running a python3 script; then using a website with a provided visual interface.
 
 A further advantage of this is that it minimises the user-side setup as much as possible to simplify it's use.
 
