@@ -12,7 +12,7 @@
   padding: 0px 20px 0px 20px;
   height: 100vh;
   box-sizing: border-box;
-  flex: 0 0.1 300px;
+  flex: 0 0.1 400px;
 
   display: flex;
   flex-flow: column;
@@ -21,7 +21,8 @@
 .menu-subcontainer {
   flex: 0 1 100vh;
   overflow: auto;
-  margin-bottom: 20px;
+  /* margin-bottom: 20px; */
+  padding-bottom: 20px;
   width: 100%;
 }
 

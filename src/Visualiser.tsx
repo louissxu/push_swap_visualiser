@@ -4,6 +4,19 @@ import { VariableSizeList as List} from "react-window";
 import { Move, stringToMove } from "./Utilities"
 import { getMovesSolutionLouis } from "./WasmWrapper";
 
+
+import Accordion from "@mui/material/Accordion";
+import AcordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import Typography from "@mui/material/Typography";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+
+import '@fontsource/roboto/300.css';
+import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/500.css';
+import '@fontsource/roboto/700.css';
+import AccordionSummary from '@mui/material/AccordionSummary';
+
 interface IBarProps {
   value: number,
   key: number,
@@ -1414,33 +1427,86 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
             <h5><a href="https://github.com/louissxu">@louissxu</a></h5> 
             <h5><a href="https://github.com/louissxu/push_swap_visualiser">Github Source</a></h5>
             <h3>Menu</h3>
-            <hr/>
           </div>
-          <MenuInputArgs
-            inputArgs={this.props.inputArgs}
-            inputArgsParseError={this.props.inputArgsParseError}
-            updateInputArgs={this.handleUpdateInputArgs.bind(this)}
-          />
-          <MenuMoves
-            // moves={this.props.programParsedMoves}
-            inputArgs={this.props.inputArgs}
-            moves={this.props.moves}
-            movesParseError={this.props.movesParseError}
-            movesUpdate={this.props.movesUpdate}
-          />
-          <MenuPlayback
-            stepBackward={this.props.stepBackward}
-            stepForward={this.props.stepForward}
-            playbackFpsRounded={this.props.playbackFpsRounded}
-            playbackFpsSliderValue={this.props.playbackFpsSliderValue}
-            updatePlaybackSpeed={this.props.updatePlaybackSpeed}
-            playbackPause={this.props.playbackPause}
-            playbackPlayForward={this.props.playbackPlayForward}
-            playbackPlayBackward={this.props.playbackPlayBackward}
-            playbackJumpToFrameNumber={this.props.playbackJumpToFrameNumber}
-            playbackCurrentFrameNumber={this.props.playbackCurrentFrameNumber}
-            playbackMaxFrameCount={this.props.playbackMaxFrameCount}
-          />
+          <Accordion>
+            <AcordionSummary
+              expandIcon={<ExpandMoreIcon/>}
+            >
+              <Typography
+                sx={{width: "33%", flexShrink: 0}}
+              >
+                Data
+              </Typography>
+              <Typography
+                sx={{color: "text.secondary"}}
+              >
+                Set/generate starting stack values to be sorted
+              </Typography>
+            </AcordionSummary>
+            <AccordionDetails>
+              <MenuInputArgs
+                inputArgs={this.props.inputArgs}
+                inputArgsParseError={this.props.inputArgsParseError}
+                updateInputArgs={this.handleUpdateInputArgs.bind(this)}
+                />
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon/>}
+            >
+              <Typography
+                sx={{width: "33%", flexShrink: 0}}
+              >
+                Moves
+              </Typography>
+              <Typography
+                sx={{color: "text.secondary"}}
+              >
+                Get/generate moves to be run on the stack
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <MenuMoves
+                // moves={this.props.programParsedMoves}
+                inputArgs={this.props.inputArgs}
+                moves={this.props.moves}
+                movesParseError={this.props.movesParseError}
+                movesUpdate={this.props.movesUpdate}
+              />
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon/>}
+            >
+              <Typography
+                sx={{width: "33%", flexShrink: 0}}
+              >
+                Playback
+              </Typography>
+              <Typography
+                sx={{color: "text.secondary"}}
+              >
+                View/control playback of moves executed on the stack
+              </Typography>
+            </AccordionSummary>
+            <AccordionDetails>
+              <MenuPlayback
+                stepBackward={this.props.stepBackward}
+                stepForward={this.props.stepForward}
+                playbackFpsRounded={this.props.playbackFpsRounded}
+                playbackFpsSliderValue={this.props.playbackFpsSliderValue}
+                updatePlaybackSpeed={this.props.updatePlaybackSpeed}
+                playbackPause={this.props.playbackPause}
+                playbackPlayForward={this.props.playbackPlayForward}
+                playbackPlayBackward={this.props.playbackPlayBackward}
+                playbackJumpToFrameNumber={this.props.playbackJumpToFrameNumber}
+                playbackCurrentFrameNumber={this.props.playbackCurrentFrameNumber}
+                playbackMaxFrameCount={this.props.playbackMaxFrameCount}
+              />
+            </AccordionDetails>
+          </Accordion>
         </div>
       </div>
     )
