@@ -6,7 +6,7 @@ import { getMovesSolutionLouis } from "./WasmWrapper";
 
 
 import Accordion from "@mui/material/Accordion";
-import AcordionSummary from "@mui/material/AccordionSummary";
+import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -15,7 +15,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import AccordionSummary from '@mui/material/AccordionSummary';
+import { InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 
 interface IBarProps {
   value: number,
@@ -768,9 +768,15 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
   //   return (newArr);
   // }
 
-  handleInputArgsSourceChange(event: React.ChangeEvent<HTMLSelectElement>) {
+  // handleInputArgsSourceChange(event: React.ChangeEvent<HTMLSelectElement>) {
+  //   this.setState({
+  //     inputArgsSource: event.currentTarget.value,
+  //   })
+  // }
+
+  handleInputArgsSourceChange(event: SelectChangeEvent): void {
     this.setState({
-      inputArgsSource: event.currentTarget.value,
+      inputArgsSource: event.target.value,
     })
   }
 
@@ -804,9 +810,24 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
 
     return (
       <div className="menu-input-args">
-        <h4>Data Controls</h4>
-        <label htmlFor="input-args-source">Select Input Arguments Source</label>
-        <select
+        <label htmlFor="input-args-source"><h4>Source</h4></label>
+        <InputLabel
+          id="input-args-source-label"
+        >  
+          Source
+        </InputLabel>
+        <Select
+          labelId="input-args-source-label"
+          id="input-args-source"
+          value={this.state.inputArgsSource}
+          onChange={this.handleInputArgsSourceChange.bind(this)}
+        >
+          <MenuItem value="manual-entry">Manual Entry</MenuItem>
+          <MenuItem value="random">Generator - Random</MenuItem>
+          <MenuItem value="mostly-sorted">Generator - Mostly Sorted</MenuItem>
+          <MenuItem value="reversed">Generator - Reversed</MenuItem>
+        </Select>
+        {/* <select
           id="input-args-source"
           name="input-args-source"
           value={this.state.inputArgsSource}
@@ -816,9 +837,9 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
           <option value="random">Generator - Random</option>
           <option value="mostly-sorted">Generator - Mostly Sorted</option>
           <option value="reversed">Generator - Reversed</option>
-          {/* <option value="adversarial-nearly-sorted">Adversarial: Nearly Sorted</option>  */}
-          {/* <option value="adversarial-reversed">Adversarial: Reversed</option> */}
-        </select>
+          <option value="adversarial-nearly-sorted">Adversarial: Nearly Sorted</option> 
+          <option value="adversarial-reversed">Adversarial: Reversed</option>
+        </select> */}
 
         {inputArgsSource}
 
@@ -1429,7 +1450,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
             <h3>Menu</h3>
           </div>
           <Accordion>
-            <AcordionSummary
+            <AccordionSummary
               expandIcon={<ExpandMoreIcon/>}
             >
               <Typography
@@ -1442,7 +1463,7 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
               >
                 Set/generate starting stack values to be sorted
               </Typography>
-            </AcordionSummary>
+            </AccordionSummary>
             <AccordionDetails>
               <MenuInputArgs
                 inputArgs={this.props.inputArgs}
