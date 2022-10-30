@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, CSSProperties } from 'react';
+import React, { useState, useRef, useEffect, CSSProperties, ChangeEventHandler } from 'react';
 import "./Visualiser.css";
 import { VariableSizeList as List} from "react-window";
 import { Move, stringToMove } from "./Utilities"
@@ -15,7 +15,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input} from '@mui/material';
 
 interface IBarProps {
   value: number,
@@ -346,7 +346,7 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
     }
   }
 
-  handleNumberOfElementsStringChange(event: React.FormEvent<HTMLInputElement>) {
+  handleNumberOfElementsStringChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     this.setState({
       numberOfElementsString: event.currentTarget.value,
     })
@@ -428,20 +428,60 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
   render() {
     return (
       <div>
-        <div className="menu-input-args-sources-description-text">
-          <b>Mostly Sorted</b><br/>
-          Generates a mostly sorted list of n numbers.
-          <br/><br/>
-          A sorted list has a proportion of entries (p) chosen and inserted in a position a limited distance (d) away.
-        </div>
+        <FormControl fullWidth>
+          <Box
+            sx={{
+              backgroundColor: "grey.300",
+              mb: 2,
+              p: 1,
+            }}
+          >
+            <b>Mostly Sorted</b><br/>
+            Generates a mostly sorted list of n numbers.
+            <br/><br/>
+            A sorted list has a proportion of entries (p) chosen and inserted in a position a limited distance (d) away.
+          </Box>
+          <TextField
+            sx={{mb: 2}}
+            id="number-of-elements-input-field"
+            label="Number of elements (n)"
+            value={this.state.numberOfElementsString}
+            onChange={this.handleNumberOfElementsStringChange.bind(this)}
+          />
+          <Typography id="proportion-of-elements-shuffled-label" gutterBottom>
+            Proportion shuffled (p)
+          </Typography>
+          <Box sx={{width: "100%"}}>
 
-        <label htmlFor="number-of-elements-input-field">Number of elements (n)</label>
-        <input
-          type="text"
-          name="number-of-elements-input-field"
-          value={this.state.numberOfElementsString}
-          onChange={this.handleNumberOfElementsStringChange.bind(this)}
-        />
+          
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs>
+                <Slider
+                  id="proportion-of-elements-shuffled"
+                  value={this.state.proportionShuffled}
+                  // onChange={this.handleProportionShuffledChange.bind(this)}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <Input
+                  value={this.state.proportionShuffled}
+                  size="small"
+                  // onChange=
+                  inputProps={{
+                    step: 0.1,
+                    min: 0,
+                    max: 1,
+                    type: "number",
+                  }}
+                />
+              </Grid>
+
+            </Grid>
+          </Box>
+        </FormControl>
+
+
+
         <br/><br/>
         <label htmlFor="proportion-of-elements-shuffled">Proportion shuffled (p): </label>
         <output>{this.state.proportionShuffled}</output>
@@ -491,9 +531,9 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
     }
   }
 
-  handleInputArgsManualEntryChange(event: React.FormEvent<HTMLInputElement>) {
+  handleInputArgsManualEntryChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     this.setState({
-      inputArgsString: event.currentTarget.value,
+      inputArgsString: event.target.value,
     })
 
     const setToErrorString = (set: Set<string>): string => {
@@ -545,21 +585,34 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
   render() {
     return (
       <div>
-        <div className="menu-input-args-sources-description-text">
-          <b>Manual Entry</b><br/>
-          Enter input args manually into box below. Moves separated by a space or tab char.<br/><br/>
-          Updates live as entry field is changed.
-        </div>
-
-        <label htmlFor="input-args-string-input-field">
-          Input Args Entry
-        </label>
-        <input
-          type="text"
-          name="input-args-string-input-field"
-          value={this.state.inputArgsString}
-          onChange={this.handleInputArgsManualEntryChange.bind(this)}
-        />
+        <FormControl fullWidth>
+          <Box
+            sx={{
+              backgroundColor: "grey.300",
+              mb: 2,
+              p: 1,
+            }}
+          >
+            <b>Manual Entry</b><br/>
+            Enter input args manually into box below. Moves separated by a space or tab char.<br/><br/>
+            Updates live as entry field is changed.
+          </Box>
+          <TextField
+            sx={{mb: 2}}
+            id="input-args-string-input-field"
+            label="Input args entry"
+            value={this.state.inputArgsString}
+            onChange={this.handleInputArgsManualEntryChange.bind(this)}
+          />
+          <Button
+            sx={{mb: 2}}
+            variant="contained"
+            // onClick={}
+            disabled
+          >
+            Stack updates automatically
+          </Button>
+        </FormControl>
       </div>
 
     )
@@ -601,10 +654,10 @@ class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMe
     return (newArr);
   }
 
-  handleNumberOfElementsStringChange(event: React.FormEvent<HTMLInputElement>) {
+  handleNumberOfElementsStringChange(event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     // console.log(event.currentTarget.value);
     this.setState({
-      numberOfElementsString: event.currentTarget.value,
+      numberOfElementsString: event.target.value,
     })
   }
 
@@ -623,22 +676,33 @@ class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMe
   render() {
     return (
       <div>
-        <div className="menu-input-args-sources-description-text">
-          <b>Random</b><br/>
-          Generates a shuffled list of n numbers.
-        </div>
+        <FormControl fullWidth>
+          <Box
+            sx={{
+              backgroundColor: "grey.300",
+              mb: 2,
+              p: 1,
+            }}
+          >
+            <b>Random</b><br/>
+            Generates a shuffled list of n numbers.
+          </Box>
 
-        <label htmlFor="number-of-elements-input-field">Number of elements (n)</label>
-        <input
-          type="text"
-          name="number-of-elements-input-field"
-          value={this.state.numberOfElementsString}
-          onChange={this.handleNumberOfElementsStringChange.bind(this)}
-        />
-
-        <button onClick={this.handleNumberOfElementsSubmit.bind(this)}>
-          Generate new stack
-        </button>
+          <TextField
+            sx={{mb: 2}}
+            id="number-of-elements-input-field"
+            label="Number of elements (n)"
+            value={this.state.numberOfElementsString}
+            onChange={this.handleNumberOfElementsStringChange.bind(this)}
+          />
+          <Button
+            sx={{mb: 2}}
+            variant="contained"
+            onClick={this.handleNumberOfElementsSubmit.bind(this)}
+          >
+            Generate new stack
+          </Button>
+        </FormControl>
       </div>
     )
   }
@@ -810,76 +874,37 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
 
     return (
       <div className="menu-input-args">
-        <label htmlFor="input-args-source"><h4>Source</h4></label>
-        <InputLabel
-          id="input-args-source-label"
-        >  
-          Source
-        </InputLabel>
-        <Select
-          labelId="input-args-source-label"
-          id="input-args-source"
-          value={this.state.inputArgsSource}
-          onChange={this.handleInputArgsSourceChange.bind(this)}
-        >
-          <MenuItem value="manual-entry">Manual Entry</MenuItem>
-          <MenuItem value="random">Generator - Random</MenuItem>
-          <MenuItem value="mostly-sorted">Generator - Mostly Sorted</MenuItem>
-          <MenuItem value="reversed">Generator - Reversed</MenuItem>
-        </Select>
-        {/* <select
-          id="input-args-source"
-          name="input-args-source"
-          value={this.state.inputArgsSource}
-          onChange={this.handleInputArgsSourceChange.bind(this)}
-        >
-          <option value="manual-entry">Manual Entry</option>
-          <option value="random">Generator - Random</option>
-          <option value="mostly-sorted">Generator - Mostly Sorted</option>
-          <option value="reversed">Generator - Reversed</option>
-          <option value="adversarial-nearly-sorted">Adversarial: Nearly Sorted</option> 
-          <option value="adversarial-reversed">Adversarial: Reversed</option>
-        </select> */}
+        <FormControl fullWidth>
+          <InputLabel id="input-args-source-label">Source</InputLabel>
+          <Select
+            sx={{mb: 2}}
+            labelId="input-args-source-label"
+            id="input-args-source"
+            label="Source"
+            value={this.state.inputArgsSource}
+            onChange={this.handleInputArgsSourceChange.bind(this)}
+            >
+            <MenuItem value="manual-entry">Manual Entry</MenuItem>
+            <MenuItem value="random">Generator - Random</MenuItem>
+            <MenuItem value="mostly-sorted">Generator - Mostly Sorted</MenuItem>
+            <MenuItem value="reversed">Generator - Reversed</MenuItem>
+          </Select>
 
-        {inputArgsSource}
+          {inputArgsSource}
 
-        {/* <label htmlFor="input-args-generator-number">
-          Number of elements:
-        </label>
-        <input
-          type="text"
-          name="input-args-generator-number"
-          value={this.state.inputArgsGeneratorNumberString}
-          onChange={this.handleInputArgsGeneratorNumberChange}
-        />
-        <button onClick={this.handleInputArgsGeneratorSubmit}>
-          Generate new stack
-        </button> */}
-        {/* <br/>
-        <br/>
-        <label htmlFor="input-args-raw">
-          Raw input arguments:
-        </label>
-        <input
-          type="text"
-          name="input-args-raw"
-          value={this.state.inputArgsEntryString}
-          disabled={this.state.manualEntryUnlocked ? false : true}
-          onChange={this.handleInputArgManualEntryChange}
-        /> */}
-        {/* <button onClick={this.unlockRawInputArgsEntry}>
-          Lock/unlock manual entry
-        </button> */}
-        <br/>
-        <label htmlFor="input-args-parsed">
-          Parsed input arguments:
-        </label>
-        <input
-          type="text"
-          name="input-args-parsed"
-          value={this.props.inputArgsParseError ? this.props.inputArgsParseError : this.props.inputArgs.join(" ")}
-          disabled={true}
-        />
+          <br/>
+          <TextField
+            sx={{
+              mt: 4,
+              mb: 2,
+            }}
+            id="input-args-parsed"
+            label="Generated starting stack"
+            variant="outlined"
+            value={this.props.inputArgsParseError ? this.props.inputArgsParseError : this.props.inputArgs.join(" ")}
+            disabled={true}
+            />
+        </FormControl>
       </div>
 
     )
