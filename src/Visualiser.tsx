@@ -506,7 +506,7 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
           value={this.state.numberOfElementsString}
           onChange={this.handleNumberOfElementsStringChange.bind(this)}
         />
-        <FormControl>
+        <FormControl fullWidth>
           <Typography id="proportion-of-elements-shuffled-label" gutterBottom>
             Proportion shuffled (p)
           </Typography>
@@ -539,7 +539,7 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
             </Grid>
           </Box>
         </FormControl>
-        <FormControl>
+        <FormControl fullWidth>
           <Typography id="distance-to-move-label" gutterBottom>
             Maximum relative shuffle distance (d)
           </Typography>
