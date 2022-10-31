@@ -15,7 +15,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input} from '@mui/material';
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input, FormGroup} from '@mui/material';
 
 interface IBarProps {
   value: number,
@@ -352,10 +352,68 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
     })
   }
 
-  handleProportionShuffledChange(event: React.FormEvent<HTMLInputElement>) {
+  handleProportionShuffledSliderChange(_event: Event, value: number | number[]) {
+    if (Array.isArray(value)) {
+      this.setState({
+        proportionShuffled: value[0],
+      })
+    } else {
+      this.setState({
+        proportionShuffled: value,
+      })
+    }
+  }
+
+  handleProportionShuffledInputChange(event: React.ChangeEvent<HTMLInputElement>) {
     this.setState({
-      proportionShuffled: (parseInt(event.currentTarget.value) / 100),
+      proportionShuffled: Number(event.target.value)
     })
+  }
+
+  handleProportionShuffledInputBlur() {
+    // Use blur to initiate range check and set to within range if out of range
+    if (this.state.proportionShuffled < 0) {
+      this.setState({
+        proportionShuffled: 0
+      })
+    }
+    if (this.state.proportionShuffled > 1) {
+      this.setState({
+        proportionShuffled: 1
+      })
+    }
+  }
+
+  handleShuffleDistanceSliderChange(_event: Event, value: number | number[]) {
+    if (Array.isArray(value)) {
+      this.setState({
+        shuffleDistance: value[0],
+      })
+    } else {
+      this.setState({
+        shuffleDistance: value,
+      })
+    }
+  }
+
+  handleShuffleDistanceInputChange(event: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({
+      shuffleDistance: Number(event.target.value)
+    })
+  }
+
+  handleShuffleDistanceInputBlur() {
+    // Use blur to initiate range check and set to within range if out of range
+    if (this.state.shuffleDistance < 0) {
+      this.setState({
+        shuffleDistance: 0
+      })
+    }
+    if (this.state.shuffleDistance > 1) {
+      this.setState({
+        shuffleDistance: 1
+      })
+    }
   }
 
   handleShuffleDistanceChange(event: React.FormEvent<HTMLInputElement>) {
@@ -397,7 +455,6 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
   generatePartiallyShuffledArgs(numberOfElements: number, proportionShuffled: number, shuffleDistance: number): Array<number> {
     // const newArr = Array.from(Array(numberOfElements).keys());
     const numberOfShuffles = Math.ceil(numberOfElements * proportionShuffled);
-    console.log(numberOfShuffles);
     const indexOfShuffles = [...new Array(numberOfShuffles)].map(() => {
       const from = Math.floor(Math.random() * numberOfElements);
       const toMin = Math.max(0, from - Math.ceil(shuffleDistance * numberOfElements / 2));
@@ -428,45 +485,49 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
   render() {
     return (
       <div>
-        <FormControl fullWidth>
-          <Box
-            sx={{
-              backgroundColor: "grey.300",
-              mb: 2,
-              p: 1,
-            }}
-          >
-            <b>Mostly Sorted</b><br/>
-            Generates a mostly sorted list of n numbers.
-            <br/><br/>
-            A sorted list has a proportion of entries (p) chosen and inserted in a position a limited distance (d) away.
-          </Box>
-          <TextField
-            sx={{mb: 2}}
-            id="number-of-elements-input-field"
-            label="Number of elements (n)"
-            value={this.state.numberOfElementsString}
-            onChange={this.handleNumberOfElementsStringChange.bind(this)}
-          />
+        <Box
+          sx={{
+            backgroundColor: "grey.300",
+            mb: 2,
+            p: 1,
+          }}
+        >
+          <b>Mostly Sorted</b><br/>
+          Generates a mostly sorted list of n numbers.
+          <br/><br/>
+          An initially sorted list has a proportion of entries (p) chosen and inserted in a position a limited distance (d) away.
+          <br/><br/>
+          Edge behaviour is truncation. Does lead to poorly sorted lists at 
+        </Box>
+        <TextField
+          sx={{mb: 2}}
+          id="number-of-elements-input-field"
+          label="Number of elements (n)"
+          value={this.state.numberOfElementsString}
+          onChange={this.handleNumberOfElementsStringChange.bind(this)}
+        />
+        <FormControl>
           <Typography id="proportion-of-elements-shuffled-label" gutterBottom>
             Proportion shuffled (p)
           </Typography>
-          <Box sx={{width: "100%"}}>
-
-          
-            <Grid container spacing={2} alignItems="center">
+          <Box sx={{width: "100%", mb: 2}}>
+            <Grid container spacing={2} alignItems="center" sx={{p: 1}}>
               <Grid item xs>
                 <Slider
                   id="proportion-of-elements-shuffled"
                   value={this.state.proportionShuffled}
-                  // onChange={this.handleProportionShuffledChange.bind(this)}
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  onChange={this.handleProportionShuffledSliderChange.bind(this)}
                 />
               </Grid>
               <Grid item xs={3}>
                 <Input
                   value={this.state.proportionShuffled}
                   size="small"
-                  // onChange=
+                  onChange={this.handleProportionShuffledInputChange.bind(this)}
+                  onBlur={this.handleProportionShuffledInputBlur.bind(this)}
                   inputProps={{
                     step: 0.1,
                     min: 0,
@@ -475,39 +536,49 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
                   }}
                 />
               </Grid>
-
             </Grid>
           </Box>
         </FormControl>
-
-
-
-        <br/><br/>
-        <label htmlFor="proportion-of-elements-shuffled">Proportion shuffled (p): </label>
-        <output>{this.state.proportionShuffled}</output>
-        <input
-          type="range"
-          name="proportion-of-elements-shuffled"
-          min="0"
-          max="100"
-          value={this.state.proportionShuffled * 100}
-          onChange={this.handleProportionShuffledChange.bind(this)}
-        />
-        <br/><br/>
-        <label htmlFor="distance-to-move">Maximum relative shuffle distance (d): </label>
-        <output>{this.state.shuffleDistance}</output>
-        <input
-          type="range"
-          name="distance-to-move"
-          min="0"
-          max="100"
-          value={this.state.shuffleDistance * 100}
-          onChange={this.handleShuffleDistanceChange.bind(this)}
-        />
-        <br/>
-        <button onClick={this.handleGenerateListSubmit.bind(this)}>
+        <FormControl>
+          <Typography id="distance-to-move-label" gutterBottom>
+            Maximum relative shuffle distance (d)
+          </Typography>
+          <Box sx={{width: "100%", mb: 2}}>
+            <Grid container spacing={2} alignItems="center" sx={{p: 1}}>
+              <Grid item xs>
+                <Slider
+                    id="distance-to-move"
+                    value={this.state.shuffleDistance}
+                    min={0}
+                    max={1}
+                    step={0.01}
+                    onChange={this.handleShuffleDistanceSliderChange.bind(this)}
+                  />
+              </Grid>
+              <Grid item xs={3}>
+                <Input
+                    value={this.state.shuffleDistance}
+                    size="small"
+                    onChange={this.handleShuffleDistanceInputChange.bind(this)}
+                    onBlur={this.handleShuffleDistanceInputBlur.bind(this)}
+                    inputProps={{
+                      step: 0.1,
+                      min: 0,
+                      max: 1,
+                      type: "number",
+                    }}
+                  />
+              </Grid>
+            </Grid>
+          </Box>
+        </FormControl>
+        <Button
+          sx={{mb: 2}}
+          variant="contained"
+          onClick={this.handleGenerateListSubmit.bind(this)}
+        >
           Generate new stack
-        </button>
+        </Button>
       </div> 
     )
   }
@@ -585,34 +656,32 @@ class MenuInputArgsManual extends React.Component<IMenuInputArgsManualProps, IMe
   render() {
     return (
       <div>
-        <FormControl fullWidth>
-          <Box
-            sx={{
-              backgroundColor: "grey.300",
-              mb: 2,
-              p: 1,
-            }}
-          >
-            <b>Manual Entry</b><br/>
-            Enter input args manually into box below. Moves separated by a space or tab char.<br/><br/>
-            Updates live as entry field is changed.
-          </Box>
-          <TextField
-            sx={{mb: 2}}
-            id="input-args-string-input-field"
-            label="Input args entry"
-            value={this.state.inputArgsString}
-            onChange={this.handleInputArgsManualEntryChange.bind(this)}
-          />
-          <Button
-            sx={{mb: 2}}
-            variant="contained"
-            // onClick={}
-            disabled
-          >
-            Stack updates automatically
-          </Button>
-        </FormControl>
+        <Box
+          sx={{
+            backgroundColor: "grey.300",
+            mb: 2,
+            p: 1,
+          }}
+        >
+          <b>Manual Entry</b><br/>
+          Enter input args manually into box below. Moves separated by a space or tab char.<br/><br/>
+          Updates live as entry field is changed.
+        </Box>
+        <TextField
+          sx={{mb: 2}}
+          id="input-args-string-input-field"
+          label="Input args entry"
+          value={this.state.inputArgsString}
+          onChange={this.handleInputArgsManualEntryChange.bind(this)}
+        />
+        <Button
+          sx={{mb: 2}}
+          variant="contained"
+          // onClick={}
+          disabled
+        >
+          Stack updates automatically
+        </Button>
       </div>
 
     )
@@ -676,7 +745,7 @@ class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMe
   render() {
     return (
       <div>
-        <FormControl fullWidth>
+        <FormGroup>
           <Box
             sx={{
               backgroundColor: "grey.300",
@@ -702,7 +771,7 @@ class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMe
           >
             Generate new stack
           </Button>
-        </FormControl>
+        </FormGroup>
       </div>
     )
   }
