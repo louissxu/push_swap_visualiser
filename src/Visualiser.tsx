@@ -745,18 +745,17 @@ class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMe
   render() {
     return (
       <div>
-        <FormGroup>
-          <Box
-            sx={{
-              backgroundColor: "grey.300",
-              mb: 2,
-              p: 1,
-            }}
-          >
-            <b>Random</b><br/>
-            Generates a shuffled list of n numbers.
-          </Box>
-
+        <Box
+          sx={{
+            backgroundColor: "grey.300",
+            mb: 2,
+            p: 1,
+          }}
+        >
+          <b>Random</b><br/>
+          Generates a shuffled list of n numbers.
+        </Box>
+        <FormControl>
           <TextField
             sx={{mb: 2}}
             id="number-of-elements-input-field"
@@ -764,14 +763,14 @@ class MenuInputArgsRandom extends React.Component<IMenuInputArgsRandomProps, IMe
             value={this.state.numberOfElementsString}
             onChange={this.handleNumberOfElementsStringChange.bind(this)}
           />
-          <Button
-            sx={{mb: 2}}
-            variant="contained"
-            onClick={this.handleNumberOfElementsSubmit.bind(this)}
-          >
-            Generate new stack
-          </Button>
-        </FormGroup>
+        </FormControl>
+        <Button
+          sx={{mb: 2}}
+          variant="contained"
+          onClick={this.handleNumberOfElementsSubmit.bind(this)}
+        >
+          Generate new stack
+        </Button>
       </div>
     )
   }
