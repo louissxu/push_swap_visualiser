@@ -279,10 +279,10 @@ class MenuInputArgsReversed extends React.Component<IMenuInputArgsReversedProps,
     }
   }
 
-  handleNumberOfElementsStringChange(event: React.FormEvent<HTMLInputElement>) {
+  handleNumberOfElementsStringChange(event: React.ChangeEvent<HTMLInputElement>) {
     // console.log(event.currentTarget.value);
     this.setState({
-      numberOfElementsString: event.currentTarget.value,
+      numberOfElementsString: event.target.value,
     })
   }
 
@@ -302,22 +302,30 @@ class MenuInputArgsReversed extends React.Component<IMenuInputArgsReversedProps,
   render() {
     return (
       <div>
-        <div className="menu-input-args-sources-description-text">
+        <Box
+          sx={{
+            backgroundColor: "grey.300",
+            mb: 2,
+            p: 1,
+          }}
+        >
           <b>Reversed</b><br/>
           Generates a list of n numbers in reversed order.
-        </div>
-
-        <label htmlFor="number-of-elements-input-field">Number of elements (n)</label>
-        <input
-          type="text"
-          name="number-of-elements-input-field"
+        </Box>
+        <TextField
+          sx={{mb: 2}}
+          id="number-of-elements-input-field"
+          label="Number of elements (n)"
           value={this.state.numberOfElementsString}
           onChange={this.handleNumberOfElementsStringChange.bind(this)}
         />
-
-        <button onClick={this.handleNumberOfElementsSubmit.bind(this)}>
+        <Button
+          sx={{mb: 2}}
+          variant="contained"
+          onClick={this.handleNumberOfElementsSubmit.bind(this)}
+        >
           Generate new stack
-        </button>
+        </Button>
       </div>
     )
 
