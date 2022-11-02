@@ -505,7 +505,7 @@ class MenuInputArgsMostlySorted extends React.Component<IMenuInputArgsMostlySort
           <br/><br/>
           An initially sorted list has a proportion of entries (p) chosen and inserted in a position a limited distance (d) away.
           <br/><br/>
-          Edge behaviour is truncation. Does lead to poorly sorted lists at 
+          Edge behaviour is truncation. Does lead to poorly sorted lists if a high value for p is chosen (p does not corelate well with number of inversions).
         </Box>
         <TextField
           sx={{mb: 2}}
