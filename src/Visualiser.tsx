@@ -15,7 +15,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { Box, Button, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input} from '@mui/material';
+import { Box, Button, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input, TextareaAutosize, FormControl} from '@mui/material';
 
 interface IBarProps {
   value: number,
@@ -952,6 +952,7 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
 
     return (
       <div className="menu-input-args">
+        <FormControl fullWidth>
           <InputLabel id="input-args-source-label">Source</InputLabel>
           <Select
             sx={{mb: 2}}
@@ -960,29 +961,29 @@ class MenuInputArgs extends React.Component<IMenuInputArgsProps, IMenuInputArgsS
             label="Source"
             value={this.state.inputArgsSource}
             onChange={this.handleInputArgsSourceChange.bind(this)}
-            fullWidth
             >
             <MenuItem value="manual-entry">Manual Entry</MenuItem>
             <MenuItem value="random">Generator - Random</MenuItem>
             <MenuItem value="mostly-sorted">Generator - Mostly Sorted</MenuItem>
             <MenuItem value="reversed">Generator - Reversed</MenuItem>
           </Select>
+        </FormControl>
 
-          {inputArgsSource}
+        {inputArgsSource}
 
-          <br/>
-          <TextField
-            sx={{
-              mt: 4,
-              mb: 2,
-            }}
-            id="input-args-parsed"
-            label="Generated starting stack"
-            variant="outlined"
-            value={this.props.inputArgsParseError ? this.props.inputArgsParseError : this.props.inputArgs.join(" ")}
-            disabled={true}
-            fullWidth
-            />
+        <br/>
+        <TextField
+          sx={{
+            mt: 4,
+            mb: 2,
+          }}
+          id="input-args-parsed"
+          label="Generated starting stack"
+          variant="outlined"
+          value={this.props.inputArgsParseError ? this.props.inputArgsParseError : this.props.inputArgs.join(" ")}
+          disabled={true}
+          fullWidth
+        />
       </div>
 
     )
@@ -995,18 +996,18 @@ interface IMenuMovesSourceSolutionLouisProps {
 }
 
 interface IMenuMovesSourceSolutionLouisState {
-  return: string,
-  stdout: string,
-  stderr: string,
+  return: string | undefined,
+  stdout: string | undefined,
+  stderr: string | undefined,
 }
 
 class MenuMovesSourceSolutionLouis extends React.Component<IMenuMovesSourceSolutionLouisProps, IMenuMovesSourceSolutionLouisState> {
   constructor(props: IMenuMovesSourceSolutionLouisProps) {
     super(props)
     this.state = {
-      return: "",
-      stdout: "",
-      stderr: "",
+      return: undefined,
+      stdout: undefined,
+      stderr: undefined,
     }
   }
 
@@ -1018,7 +1019,7 @@ class MenuMovesSourceSolutionLouis extends React.Component<IMenuMovesSourceSolut
     return formattedArgs;
   }
 
-  async getMoves() {
+  async getMoves(_event: React.MouseEvent<HTMLButtonElement>) {
     const result = await getMovesSolutionLouis(this.formatArgs(this.props.inputArgs))
     const moves: Array<Move | null> = result.stdout.map((elem: string): Move | null => stringToMove(elem));
     let parseError = "";
@@ -1052,37 +1053,67 @@ class MenuMovesSourceSolutionLouis extends React.Component<IMenuMovesSourceSolut
   render() {
     return(
       <div>
-        <div className="menu-moves-sources-description-text">
+        <Box
+          sx={{
+            backgroundColor: "grey.300",
+            mb: 2,
+            p: 1,
+          }}
+        >
           <b>Solution - @louissxu</b><br/>
           Get moves from user solution by @louissxu.<br/><br/>
           More info: INSERT LINK<br/>
           Source: INSERT LINK<br/>
-        </div>
+        </Box>
 
-        <button
-          onClick={this.getMoves.bind(this)}
-        >
-          Get Moves
-        </button><br/>
-
-        <label htmlFor="stdout">stdout</label><br/>
-        <textarea
+        <TextField
+          sx={{mb: 2}}
           id="stdout"
-          value={this.state.stdout}
+          label="stdout"
+          // placeholder="Populated by stdout from C program"
+          value={this.state.stdout === undefined ? "Populated by stdout from C program" :
+            this.state.stdout === "" ? "<empty>" :
+            this.state.stdout}
           disabled={true}
-        /><br/>
-        <label htmlFor="stderr">stderr</label><br/>
-        <textarea
+          multiline
+          maxRows={2.5}
+          fullWidth
+        />
+        <TextField
+          sx={{mb: 2}}
           id="stderr"
-          value={this.state.stderr}
+          label="stderr"
+          // placeholder="Populated by stderr from C program"
+          value={this.state.stderr === undefined ? "Populated by stderr from C program" : 
+            this.state.stderr === "" ? "<empty>" :
+            this.state.stderr}
           disabled={true}
-        /><br/>
-        <label htmlFor="return">return</label><br/>
-        <textarea
+          multiline
+          maxRows={2.5}
+          fullWidth
+        />
+        <TextField
+          sx={{mb: 2}}
           id="return"
-          value={this.state.return}
+          label="return"
+          // placeholder="Populated by stderr from C program"
+          value={this.state.return === undefined ? "Populated by return from C program" :
+            this.state.return === "" ? "<empty>" :
+            this.state.return}
           disabled={true}
-        /><br/>
+          multiline
+          maxRows={2.5}
+          fullWidth
+        />
+        <Button
+          sx={{mb: 2}}
+          variant="contained"
+          onClick={this.getMoves.bind(this)}
+          // onClick={}
+          fullWidth
+        >
+          Get moves
+        </Button>
       </div>
     )
   }
@@ -1095,16 +1126,16 @@ interface IMenuMovesSourcePythonLinkerProps {
 }
 
 interface IMenuMovesSourcePythonLinkerState {
-  stdout: string,
-  stderr: string,
+  stdout: string | undefined,
+  stderr: string | undefined,
 }
 
 class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePythonLinkerProps, IMenuMovesSourcePythonLinkerState> {
   constructor(props: IMenuMovesSourcePythonLinkerProps) {
     super(props)
     this.state = {
-      stdout: "",
-      stderr: "",
+      stdout: undefined,
+      stderr: undefined,
     }
   }
 
@@ -1115,7 +1146,7 @@ class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePython
     return url;
   }
 
-  getMoves() {
+  getMoves(_event: React.MouseEvent<HTMLButtonElement>) {
     const url = this.generateQueryUrl(this.props.inputArgs);
     fetch(url).then((response) => {
       return response.text();
@@ -1157,32 +1188,56 @@ class MenuMovesSourcePythonLinker extends React.Component<IMenuMovesSourcePython
   render() {
     return (
       <div>
-        <div className="menu-moves-sources-description-text">
+        <Box
+          sx={{
+            backgroundColor: "grey.300",
+            mb: 2,
+            p: 1,
+          }}
+        >
           <b>Python linker</b><br/>
           Get moves from running a user provided C program.<br/><br/>
-          Python program sets up HTTP server which runs temporary API to allow access to C program from this SPA.<br/><br/>
+          Running the python program sets up HTTP server which runs a temporary API to allow access to a C program to generate the moves.<br/><br/>
           More info: INSERT LINK<br/>
           Source: INSERT LINK<br/>
-        </div>
+        </Box>
 
-        <button
-          onClick={this.getMoves.bind(this)}
-        >
-          Get Moves
-        </button><br/>
 
-        <label htmlFor="stdout">stdout</label><br/>
-        <textarea
+        <TextField
+          sx={{mb: 2}}
           id="stdout"
-          value={this.state.stdout}
+          label="stdout"
+          // placeholder="Populated by stdout from C program"
+          value={this.state.stdout === undefined ? "Populated by stdout from C program" :
+            this.state.stdout === "" ? "<empty>" :
+            this.state.stdout}
           disabled={true}
-        /><br/>
-        <label htmlFor="stderr">stderr</label><br/>
-        <textarea
+          multiline
+          maxRows={2.5}
+          fullWidth
+        />
+        <TextField
+          sx={{mb: 2}}
           id="stderr"
-          value={this.state.stderr}
+          label="stderr"
+          // placeholder="Populated by stderr from C program"
+          value={this.state.stderr === undefined ? "Populated by stderr from C program" :
+            this.state.stderr === "" ? "<empty>" :
+            this.state.stderr}
           disabled={true}
-        /><br/>
+          multiline
+          maxRows={2.5}
+          fullWidth
+        />
+        <Button
+          sx={{mb: 2}}
+          variant="contained"
+          onClick={this.getMoves.bind(this)}
+          // onClick={}
+          fullWidth
+        >
+          Get moves
+        </Button>
       </div>
     )
   }
@@ -1265,21 +1320,39 @@ class MenuMovesSourceManual extends React.Component<IMenuMovesSourceManualProps,
   render() {
     return (
       <div>
-        <div className="menu-moves-sources-description-text">
+        <Box
+          sx={{
+            backgroundColor: "grey.300",
+            mb: 2,
+            p: 1,
+          }}
+        >
           <b>Manual Entry</b><br/>
           Enter moves manually into box below. Moves separated by new line char.<br/><br/>
           Updates live as entry field is changed.<br/><br/>
           More info: INSERT LINK<br/>
           Source: INSERT LINK<br/>
-        </div>
-        
-
-        <label htmlFor="moves-manual-entry-input-field">Moves entry</label><br/>
-        <textarea
+        </Box>
+        <TextField
+          sx={{mb: 2}}
           id="moves-manual-entry-input-field"
+          label="Moves entry"
           value={this.state.inputString}
           onChange={this.handleMovesInputFieldChange.bind(this)}
+          fullWidth
+          multiline
+          rows={2.5}
+          // maxRows={2.5}
         />
+        <Button
+          sx={{mb: 2}}
+          variant="contained"
+          // onClick={}
+          disabled
+          fullWidth
+        >
+          Moves updates automatically
+        </Button>
       </div>
     )
   }
@@ -1340,34 +1413,40 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
     
     return (
       <div className="menu-moves">
-        <InputLabel id="moves-source-label">Source</InputLabel>
-        <Select
-          sx={{mb: 2}}
-          labelId="moves-source-label"
-          id="moves-source"
-          label="Source"
-          value={this.state.movesSource}
-          onChange={this.handleMovesSourceSelectChange}
-          fullWidth
-        >
-          <MenuItem value="python-linker">Python Linker</MenuItem>
-          <MenuItem value="manual-entry">Manual Entry</MenuItem>
-          <MenuItem value="solution-louissxu">Solution - @louissxu</MenuItem> 
-        </Select>
+        <FormControl fullWidth>
+          <InputLabel id="moves-source-label">Source</InputLabel>
+          <Select
+            sx={{mb: 2}}
+            labelId="moves-source-label"
+            id="moves-source"
+            label="Source"
+            value={this.state.movesSource}
+            onChange={this.handleMovesSourceSelectChange}
+          >
+            <MenuItem value="python-linker">Python Linker</MenuItem>
+            <MenuItem value="manual-entry">Manual Entry</MenuItem>
+            <MenuItem value="solution-louissxu">Solution - @louissxu</MenuItem> 
+          </Select>
+        </FormControl>
 
-
-        <br/>
         {movesGenerator}
+
         <br/>
-
-        <label htmlFor="parsed-moves">Parsed moves</label><br/>
-        <textarea
-          id="parsed-moves"
-          // type="text"
-          value={this.props.movesParseError ? this.props.movesParseError : this.props.moves.join("\n")}
+        <TextField
+          sx={{
+            mt: 4,
+            mb: 2,
+          }}
+          id="moves-parsed"
+          label="Parsed moves"
+          variant="outlined"
+          value={this.props.movesParseError ? this.props.movesParseError: this.props.moves.join("\n")}
           disabled={true}
-        /><br/>
-
+          multiline={true}
+          rows={2.5}
+          // maxRows={2.5}
+          fullWidth
+        />
       </div>
     )
   }
