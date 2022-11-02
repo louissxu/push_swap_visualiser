@@ -1310,9 +1310,9 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
     this.handleMovesSourceSelectChange = this.handleMovesSourceSelectChange.bind(this); 
   }
 
-  handleMovesSourceSelectChange(event: React.ChangeEvent<HTMLSelectElement>) {
+  handleMovesSourceSelectChange(event: SelectChangeEvent): void {
     this.setState({
-      movesSource: event.currentTarget.value,
+      movesSource: event.target.value,
     })
   }
 
@@ -1340,19 +1340,21 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
     
     return (
       <div className="menu-moves">
-        <h4>Moves Controls</h4>
-        <label htmlFor="moves-source">Select Moves Source</label>
-        <select
+        <InputLabel id="moves-source-label">Source</InputLabel>
+        <Select
+          sx={{mb: 2}}
+          labelId="moves-source-label"
           id="moves-source"
-          name="moves-source"
+          label="Source"
           value={this.state.movesSource}
           onChange={this.handleMovesSourceSelectChange}
+          fullWidth
         >
+          <MenuItem value="python-linker">Python Linker</MenuItem>
+          <MenuItem value="manual-entry">Manual Entry</MenuItem>
+          <MenuItem value="solution-louissxu">Solution - @louissxu</MenuItem> 
+        </Select>
 
-          <option value="python-linker">Python Linker</option>
-          <option value="manual-entry">Manual Entry</option>
-          <option value="solution-louissxu">Solution - @louissxu</option>
-        </select>
 
         <br/>
         {movesGenerator}
