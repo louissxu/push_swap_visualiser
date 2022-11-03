@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, CSSProperties, ChangeEventHandler } from 'react';
+import React, { useState, useRef, useEffect, CSSProperties } from 'react';
 import "./Visualiser.css";
 import { VariableSizeList as List} from "react-window";
 import { Move, stringToMove } from "./Utilities"
@@ -15,7 +15,13 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { Box, Button, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input, TextareaAutosize, FormControl} from '@mui/material';
+import { Box, Button, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input, TextareaAutosize, FormControl, IconButton, ToggleButtonGroup, ToggleButton} from '@mui/material';
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import SkipNextIcon from "@mui/icons-material/SkipNext";
+import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import { Pause } from '@mui/icons-material';
+
 
 interface IBarProps {
   value: number,
@@ -1474,20 +1480,7 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
   constructor(props: IMenuPlaybackProps) {
     super(props)
     this.state = {
-
     }
-  }
-
-  handlePlaybackPause() {
-    this.props.playbackPause();
-  }
-  
-  handlePlaybackPlayForward() {
-    this.props.playbackPlayForward();
-  }
-  
-  handlePlaybackPlayBackward() {
-    this.props.playbackPlayBackward();
   }
 
   handlePlaybackSpeedChange(event: React.FormEvent<HTMLInputElement>) {
@@ -1498,21 +1491,66 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
     this.props.playbackJumpToFrameNumber(parseInt(event.currentTarget.value));
   }
 
+  handlePlaybackFrameNumberSliderChange(_event: Event, value: number | number[]) {
+    if (Array.isArray(value)) {
+      this.props.playbackJumpToFrameNumber(value[0]);
+    } else {
+      this.props.playbackJumpToFrameNumber(value);
+    }
+  }
+
   render() {
+    const frameSliderMarks = [
+      {
+        value: 0,
+        label: "0",
+      },
+      {
+        value: this.props.playbackMaxFrameCount,
+        label: this.props.playbackMaxFrameCount.toString(),
+      }
+    ]
 
     return (
       <div className="menu-playback">
-        <h4>Playback Controls</h4>
-        <button
+        <Typography id="playback-frame-number-label" gutterBottom>
+          Playback frame number
+        </Typography>
+        <Slider
+          id="playback-frame-number"
+          value={this.props.playbackCurrentFrameNumber}
+          min={0}
+          max={this.props.playbackMaxFrameCount}
+          onChange={this.handlePlaybackFrameNumberSliderChange.bind(this)}
+          valueLabelDisplay="auto"
+          marks={frameSliderMarks}
+        />
+        <IconButton
+          aria-label="step-backward"
           onClick={this.props.stepBackward}
         >
-          Step Backward
-        </button>
-        <button
+          <SkipPreviousIcon/>
+        </IconButton>
+        <IconButton
+          aria-label="pause"
+          onClick={this.props.playbackPause}
+        >
+          <PauseIcon/>
+        </IconButton>
+        <IconButton
+          aria-label="play"
+          onClick={this.props.playbackPlayForward}
+        >
+          <PlayArrowIcon/>
+        </IconButton>
+        <IconButton
+          aria-label="step-forward"
           onClick={this.props.stepForward}
         >
-          Step Forward
-        </button><br/>
+          <SkipNextIcon/>
+        </IconButton>
+
+
         <label htmlFor="playback-speed">Playback Speed: </label>
         <output>{this.props.playbackFpsRounded.toString() + "fps"}</output>
         <input
@@ -1524,15 +1562,6 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
           value={this.props.playbackFpsSliderValue.toString()}
           onChange={this.handlePlaybackSpeedChange.bind(this)}
         />
-        <button
-          onClick={this.handlePlaybackPlayBackward.bind(this)}
-        >Play Backward</button>
-        <button
-          onClick={this.handlePlaybackPause.bind(this)}
-        >Pause</button>
-        <button
-          onClick={this.handlePlaybackPlayForward.bind(this)}
-        >Play Forward</button>
         <br/>
         <label htmlFor="playback-frame-number">Playback Frame Number: </label>
         <output>{this.props.playbackCurrentFrameNumber}</output>
