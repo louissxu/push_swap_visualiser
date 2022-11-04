@@ -1549,7 +1549,10 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
         >
           <SkipNextIcon/>
         </IconButton>
-
+        <Slider
+          id="playback-speed"
+          value={this.props.playbackFpsSliderValue}
+        />
 
         <label htmlFor="playback-speed">Playback Speed: </label>
         <output>{this.props.playbackFpsRounded.toString() + "fps"}</output>
