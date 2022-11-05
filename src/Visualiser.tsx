@@ -1461,8 +1461,8 @@ class MenuMoves extends React.Component<IMenuMovesProps, IMenuMovesState> {
 interface IMenuPlaybackProps {
   stepBackward: () => void,
   stepForward: () => void,
-  playbackFpsRounded: number,
-  playbackFpsSliderValue: number,
+  // playbackFpsRounded: number,
+  // playbackFpsSliderValue: number,
   updatePlaybackSpeed: (newValue: number) => void,
   playbackPause: () => void,
   playbackPlayForward: () => void,
@@ -1473,23 +1473,24 @@ interface IMenuPlaybackProps {
 }
 
 interface IMenuPlaybackState {
-
+  playbackSpeedSliderValue: number,
 }
 
 class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackState> {
   constructor(props: IMenuPlaybackProps) {
     super(props)
     this.state = {
+      playbackSpeedSliderValue: 23
     }
   }
 
-  handlePlaybackSpeedChange(event: React.FormEvent<HTMLInputElement>) {
-    this.props.updatePlaybackSpeed(parseInt(event.currentTarget.value));
-  }
+  // handlePlaybackSpeedChange(event: React.FormEvent<HTMLInputElement>) {
+  //   this.props.updatePlaybackSpeed(parseInt(event.currentTarget.value));
+  // }
 
-  handlePlaybackFrameNumberChange(event: React.FormEvent<HTMLInputElement>) {
-    this.props.playbackJumpToFrameNumber(parseInt(event.currentTarget.value));
-  }
+  // handlePlaybackFrameNumberChange(event: React.FormEvent<HTMLInputElement>) {
+  //   this.props.playbackJumpToFrameNumber(parseInt(event.currentTarget.value));
+  // }
 
   handlePlaybackFrameNumberSliderChange(_event: Event, value: number | number[]) {
     if (Array.isArray(value)) {
@@ -1497,6 +1498,27 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
     } else {
       this.props.playbackJumpToFrameNumber(value);
     }
+  }
+
+  handlePlaybackSpeedSliderChange(_event: Event, value: number | number[]) {
+    if (typeof value ==="number") {
+      this.props.updatePlaybackSpeed(value);
+      this.setState({
+        playbackSpeedSliderValue: value
+      })
+    }
+  }
+  
+  calculateSliderValueToFpsValue(sliderValue: number) {
+    return 0.25 * (1.15 ** sliderValue);
+  }
+
+  formatSliderLabel(value: number) {
+    if (value < 1) {
+      // return (`${parseFloat(value.toPrecision(2))}fps (${(1/value).toFixed(1)} sec/frame)`)
+      return(`${(1/value).toFixed(1)} sec/frame`)
+    }
+    return (`${parseFloat(value.toPrecision(2))}fps`)
   }
 
   render() {
@@ -1549,11 +1571,22 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
         >
           <SkipNextIcon/>
         </IconButton>
+        <Typography id="playback-speed-label" gutterBottom>
+          Playback speed: {this.formatSliderLabel(this.calculateSliderValueToFpsValue(this.state.playbackSpeedSliderValue))}
+        </Typography>
         <Slider
           id="playback-speed"
-          value={this.props.playbackFpsSliderValue}
+          value={this.state.playbackSpeedSliderValue}
+          min={0}
+          max={60}
+          scale={this.calculateSliderValueToFpsValue.bind(this)}
+          getAriaValueText={this.formatSliderLabel.bind(this)}
+          valueLabelFormat={this.formatSliderLabel.bind(this)}
+          onChange={this.handlePlaybackSpeedSliderChange.bind(this)}
+          valueLabelDisplay="auto"
         />
 
+{/* 
         <label htmlFor="playback-speed">Playback Speed: </label>
         <output>{this.props.playbackFpsRounded.toString() + "fps"}</output>
         <input
@@ -1576,7 +1609,7 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
           max={this.props.playbackMaxFrameCount.toString()}
           value={this.props.playbackCurrentFrameNumber.toString()}
           onChange={this.handlePlaybackFrameNumberChange.bind(this)}
-        />
+        /> */}
       </div>
     )
   }
@@ -1603,8 +1636,8 @@ interface IMenuProps {
   playbackPlayForward: () => void,
   playbackPlayBackward: () => void,
   updatePlaybackSpeed: (newValue: number) => void,
-  playbackFpsRounded: number,
-  playbackFpsSliderValue: number,
+  // playbackFpsRounded: number,
+  // playbackFpsSliderValue: number,
   playbackMaxFrameCount: number,
   playbackCurrentFrameNumber: number,
   playbackJumpToFrameNumber: (newValue: number) => void,
@@ -1732,8 +1765,8 @@ class Menu extends React.Component<IMenuProps, IMenuState> {
               <MenuPlayback
                 stepBackward={this.props.stepBackward}
                 stepForward={this.props.stepForward}
-                playbackFpsRounded={this.props.playbackFpsRounded}
-                playbackFpsSliderValue={this.props.playbackFpsSliderValue}
+                // playbackFpsRounded={this.props.playbackFpsRounded}
+                // playbackFpsSliderValue={this.props.playbackFpsSliderValue}
                 updatePlaybackSpeed={this.props.updatePlaybackSpeed}
                 playbackPause={this.props.playbackPause}
                 playbackPlayForward={this.props.playbackPlayForward}
@@ -1772,7 +1805,7 @@ interface IVisualiserState {
   min_value: number,
   max_value: number,
   num_values: number,
-  playback_fps_slider_value: number,
+  // playback_fps_slider_value: number,
   playback_fps: number,
   playback_dir: number,
   playback_current_loop: null | ReturnType<typeof setTimeout>,
@@ -1794,8 +1827,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
       min_value: Math.min(...this.props.values),
       max_value: Math.max(...this.props.values) + 1,
       num_values: this.props.values.length,
-      playback_fps_slider_value: 23,
-      playback_fps: this.calculateNewFps(23),
+      // playback_fps_slider_value: 23,
+      playback_fps: 10,
       playback_dir: 0,
       playback_current_loop: null,
       frames: [{stack_a: this.props.values, stack_b: [] as Array<number>}],
@@ -2201,14 +2234,14 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   //   });
   // }  
 
-  calculateNewFps(exp: number) {
-    return 0.25 * (1.15 ** exp);
-  }
+  // calculateNewFps(exp: number) {
+  //   return 0.25 * (1.15 ** exp);
+  // }
 
-  updatePlaybackSpeed(sliderValue: number) {
+  updatePlaybackSpeed(newValue: number) {
     this.setState({
-      playback_fps_slider_value: sliderValue,
-      playback_fps: this.calculateNewFps(sliderValue),
+      // playback_fps_slider_value: sliderValue,
+      playback_fps: newValue,
     })  
   }  
 
@@ -2233,6 +2266,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   render() {
+    
+
     return (
       <div className="visualiser">
         <Menu
@@ -2256,8 +2291,8 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
           playbackPlayForward={this.playbackPlayForward.bind(this)}
           playbackPlayBackward={this.playbackPlayBackward.bind(this)}
           updatePlaybackSpeed={this.updatePlaybackSpeed.bind(this)}
-          playbackFpsRounded={parseFloat(this.state.playback_fps.toPrecision(2))}
-          playbackFpsSliderValue={this.state.playback_fps_slider_value}
+          // playbackFpsRounded={parseFloat(this.state.playback_fps.toPrecision(2))}
+          // playbackFpsSliderValue={this.state.playback_fps_slider_value}
           playbackMaxFrameCount={this.state.moves.length - 1}
           playbackCurrentFrameNumber={this.state.current_move_num}
           playbackJumpToFrameNumber={this.playbackJumpToFrameNumber.bind(this)}
