@@ -16,11 +16,10 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { Box, Button, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input, TextareaAutosize, FormControl, IconButton, ToggleButtonGroup, ToggleButton} from '@mui/material';
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
-import SkipNextIcon from "@mui/icons-material/SkipNext";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import NextFrameIcon from "@mui/icons-material/NotStarted";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
-import { Pause } from '@mui/icons-material';
 
 
 interface IBarProps {
@@ -1547,30 +1546,51 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
           valueLabelDisplay="auto"
           marks={frameSliderMarks}
         />
-        <IconButton
-          aria-label="step-backward"
-          onClick={this.props.stepBackward}
+        <Grid
+          container
+          sx={{
+            justifyContent:"center"
+          }}
         >
-          <SkipPreviousIcon/>
-        </IconButton>
-        <IconButton
-          aria-label="pause"
-          onClick={this.props.playbackPause}
-        >
-          <PauseIcon/>
-        </IconButton>
-        <IconButton
-          aria-label="play"
-          onClick={this.props.playbackPlayForward}
-        >
-          <PlayArrowIcon/>
-        </IconButton>
-        <IconButton
-          aria-label="step-forward"
-          onClick={this.props.stepForward}
-        >
-          <SkipNextIcon/>
-        </IconButton>
+          <IconButton
+            aria-label="play-backward"
+            onClick={this.props.playbackPlayBackward}
+          >
+            <PlayCircleIcon
+              sx={{
+                transform: "scaleX(-1)",
+              }}
+            />
+          </IconButton>
+          <IconButton
+            aria-label="step-backward"
+            onClick={this.props.stepBackward}
+          >
+            <NextFrameIcon
+              sx={{
+                transform: "scaleX(-1)",
+              }}
+            />
+          </IconButton>
+          <IconButton
+            aria-label="pause"
+            onClick={this.props.playbackPause}
+          >
+            <PauseCircleIcon/>
+          </IconButton>
+          <IconButton
+            aria-label="step-forward"
+            onClick={this.props.stepForward}
+          >
+            <NextFrameIcon/>
+          </IconButton>
+          <IconButton
+            aria-label="play"
+            onClick={this.props.playbackPlayForward}
+          >
+            <PlayCircleIcon/>
+          </IconButton>
+        </Grid>
         <Typography id="playback-speed-label" gutterBottom>
           Playback speed: {this.formatSliderLabel(this.calculateSliderValueToFpsValue(this.state.playbackSpeedSliderValue))}
         </Typography>
