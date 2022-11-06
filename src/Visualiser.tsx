@@ -21,6 +21,10 @@ import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import NextFrameIcon from "@mui/icons-material/NotStarted";
 import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
 
+import PlayIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import EjectIcon from "@mui/icons-material/Eject";
+
 
 interface IBarProps {
   value: number,
@@ -1549,14 +1553,14 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
         <Grid
           container
           sx={{
-            justifyContent:"center"
+            justifyContent: "center"
           }}
         >
           <IconButton
             aria-label="play-backward"
             onClick={this.props.playbackPlayBackward}
           >
-            <PlayCircleIcon
+            <PlayIcon
               sx={{
                 transform: "scaleX(-1)",
               }}
@@ -1566,9 +1570,9 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
             aria-label="step-backward"
             onClick={this.props.stepBackward}
           >
-            <NextFrameIcon
+            <EjectIcon
               sx={{
-                transform: "scaleX(-1)",
+                transform: "rotate(-90deg)"
               }}
             />
           </IconButton>
@@ -1576,21 +1580,26 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
             aria-label="pause"
             onClick={this.props.playbackPause}
           >
-            <PauseCircleIcon/>
+            <PauseIcon/>
           </IconButton>
           <IconButton
             aria-label="step-forward"
             onClick={this.props.stepForward}
           >
-            <NextFrameIcon/>
+            <EjectIcon
+              sx={{
+                transform: "rotate(90deg)"
+              }}
+            />
           </IconButton>
           <IconButton
             aria-label="play"
             onClick={this.props.playbackPlayForward}
           >
-            <PlayCircleIcon/>
+            <PlayIcon/>
           </IconButton>
         </Grid>
+
         <Typography id="playback-speed-label" gutterBottom>
           Playback speed: {this.formatSliderLabel(this.calculateSliderValueToFpsValue(this.state.playbackSpeedSliderValue))}
         </Typography>
