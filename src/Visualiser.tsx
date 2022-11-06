@@ -15,11 +15,7 @@ import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
-import { Box, Button, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input, TextareaAutosize, FormControl, IconButton, ToggleButtonGroup, ToggleButton} from '@mui/material';
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import NextFrameIcon from "@mui/icons-material/NotStarted";
-import SkipPreviousIcon from "@mui/icons-material/SkipPrevious";
+import { Box, Button, InputLabel, MenuItem, Select, SelectChangeEvent, Slider, TextField, Grid, Input, FormControl, IconButton} from '@mui/material';
 
 import PlayIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
