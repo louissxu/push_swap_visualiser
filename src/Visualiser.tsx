@@ -1502,7 +1502,7 @@ class MenuPlayback extends React.Component<IMenuPlaybackProps, IMenuPlaybackStat
 
   handlePlaybackSpeedSliderChange(_event: Event, value: number | number[]) {
     if (typeof value ==="number") {
-      this.props.updatePlaybackSpeed(value);
+      this.props.updatePlaybackSpeed(this.calculateSliderValueToFpsValue(value));
       this.setState({
         playbackSpeedSliderValue: value
       })
@@ -2266,7 +2266,7 @@ class Visualiser extends React.Component<IVisualiserProps, IVisualiserState> {
   }
 
   render() {
-    
+
 
     return (
       <div className="visualiser">
