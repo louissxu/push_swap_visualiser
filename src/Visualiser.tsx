@@ -224,7 +224,7 @@ const Moves = (props: IMovesProps) => {
         >
           <MovesRow
             move={props.moves[index]}
-            move_number={index}
+            move_number={index + 1}
             is_current={index === props.current_move_num ? true : false}
           />
         </div>
